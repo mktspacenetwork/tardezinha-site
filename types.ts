@@ -1,6 +1,8 @@
 
 import React from 'react';
 
+declare var confetti: any;
+
 export interface FAQItem {
   question: string;
   answer: string | React.ReactNode;
@@ -12,9 +14,10 @@ export interface Employee {
 }
 
 export interface Confirmation {
+  id?: number; // Optional for new inserts, required for reads
   name: string;
   phone: string;
   guests: number;
   transport: boolean;
-  timestamp: string;
+  created_at?: string; // Supabase generates this automatically
 }

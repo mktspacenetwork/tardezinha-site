@@ -1,7 +1,12 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { employees } from '../data/employees';
 import { Confirmation } from '../types';
+import { supabase, isSupabaseConfigured } from '../supabaseClient';
 
+declare var confetti: any;
+
+// Lista visual estática para o carrossel (apenas estético)
 const confirmedAttendees = [
   { initials: 'JS', fullName: 'João Silva', mood: '🎉' },
   { initials: 'AM', fullName: 'Ana Martins', mood: '😎' },
@@ -38,6 +43,10 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
+  // Bus seats logic
+  const TOTAL_BUS_SEATS = 46; 
+  const [remainingSeats, setRemainingSeats] = useState(12); // Valor inicial placeholder
+
   useEffect(() => {
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) {
@@ -57,6 +66,22 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
     const diffTime = Math.max(0, deadline.getTime() - today.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     setRemainingDays(diffDays);
+    
+    // Buscar vagas reais do banco de dados
+    if (isSupabaseConfigured()) {
+        const fetchSeats = async () => {
+            // Conta quantas pessoas marcaram transport = true
+            const { count, error } = await supabase
+                .from('confirmations')
+                .select('*', { count: 'exact', head: true })
+                .eq('transport', true);
+            
+            if (!error && count !== null) {
+                setRemainingSeats(Math.max(0, TOTAL_BUS_SEATS - count));
+            }
+        };
+        fetchSeats();
+    }
   }, []);
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,15 +104,11 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
 
   const handleRulesClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    // Close the modal so that when user comes back, they see the site, not the modal over the site
-    // Alternatively, we could keep it open if we want them to continue where they left off, 
-    // but standard behavior for "full page" navigation is usually to reset or persist state elsewhere.
-    // Here we close it.
     setIsModalOpen(false);
     onOpenRules();
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -96,49 +117,73 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
       return;
     }
 
-    setIsSubmitting(true);
-    const newConfirmation: Confirmation = {
-      name,
-      phone,
-      guests: wantsGuests ? guestCount : 0,
-      transport: wantsTransport ?? false,
-      timestamp: new Date().toISOString(),
-    };
+    if (!isSupabaseConfigured()) {
+        setError('ERRO: O banco de dados não está conectado. Avise o administrador para configurar o supabaseClient.ts');
+        return;
+    }
 
-    // Simulate saving to localStorage
-    setTimeout(() => {
-      try {
-        const existingConfirmationsRaw = localStorage.getItem('tardezinhaConfirmations');
-        const existingConfirmations: Confirmation[] = existingConfirmationsRaw ? JSON.parse(existingConfirmationsRaw) : [];
-        
-        // Check for duplicates
-        if(existingConfirmations.some(c => c.name.toLowerCase() === name.toLowerCase())) {
-            setError('Este nome já foi confirmado. Entre em contato com o RH se precisar alterar algo.');
-            setIsSubmitting(false);
-            return;
+    setIsSubmitting(true);
+
+    try {
+        // 1. Verificar duplicidade
+        const { data: existing } = await supabase
+            .from('confirmations')
+            .select('id')
+            .ilike('name', name) // Case insensitive check
+            .maybeSingle();
+
+        if (existing) {
+             setError('Este nome já consta na lista de confirmados.');
+             setIsSubmitting(false);
+             return;
         }
 
-        const updatedConfirmations = [...existingConfirmations, newConfirmation];
-        localStorage.setItem('tardezinhaConfirmations', JSON.stringify(updatedConfirmations));
+        // 2. Inserir no Banco de Dados
+        const { error: insertError } = await supabase
+            .from('confirmations')
+            .insert([
+                {
+                    name,
+                    phone,
+                    guests: wantsGuests ? guestCount : 0,
+                    transport: wantsTransport ?? false,
+                }
+            ]);
+
+        if (insertError) throw insertError;
         
+        // 3. Efeito Confetti
+        if (typeof confetti === 'function') {
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#FFB74D', '#FF8A65', '#FF4081', '#8E24AA'],
+                zIndex: 10000
+            });
+        }
+
+        // 4. Atualizar UI
+        if (wantsTransport) {
+            setRemainingSeats(prev => Math.max(0, prev - 1));
+        }
+
         setSuccessMessage(`Presença confirmada, ${name.split(' ')[0]}! Nos vemos na festa.`);
         setIsSubmitting(false);
         setIsModalOpen(false);
         onConfirm();
 
-        // Scroll to purchase options after a short delay
         setTimeout(() => {
             document.getElementById('purchase-options')?.scrollIntoView({ behavior: 'smooth' });
         }, 500);
 
-        // Clear success message after some time
         setTimeout(() => setSuccessMessage(''), 5000);
 
-      } catch (err) {
-        setError('Ocorreu um erro ao salvar sua confirmação. Tente novamente.');
+    } catch (err: any) {
+        console.error(err);
+        setError(`Erro ao salvar: ${err.message || 'Tente novamente.'}`);
         setIsSubmitting(false);
-      }
-    }, 1000);
+    }
   };
 
   return (
@@ -146,7 +191,7 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
       <section id="checkin" className="bg-white py-20 px-4 text-dark-navy">
         <div className="max-w-4xl mx-auto text-center">
         {successMessage && (
-            <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-8 rounded-md shadow-md" role="alert">
+            <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-8 rounded-md shadow-md animate-fadeIn" role="alert">
                 <p className="font-bold">Sucesso!</p>
                 <p>{successMessage}</p>
             </div>
@@ -174,6 +219,11 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
                 >
                     QUERO PARTICIPAR!
                 </button>
+                {remainingSeats < 15 && (
+                    <p className="text-red-500 font-bold mt-3 text-sm animate-pulse">
+                        ⚠️ Restam apenas {remainingSeats} vagas no transporte!
+                    </p>
+                )}
               </div>
   
               <p className="font-semibold text-gray-800">
@@ -192,14 +242,14 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
                       <div className="flex animate-marquee group-hover:[animation-play-state:paused] whitespace-nowrap">
                           {[...confirmedAttendees, ...confirmedAttendees].map((attendee, index) => (
                               <div key={index} className="relative flex flex-col items-center flex-shrink-0 mx-4 w-20 group/attendee">
-                                  <div className="absolute bottom-[130%] left-1/2 w-max -translate-x-1/2 px-3 py-1 bg-dark-navy text-white text-sm rounded-md shadow-lg opacity-0 scale-95 group-hover/attendee:opacity-100 group-hover/attendee:scale-100 group-hover/attendee:-translate-y-2 transform transition-all duration-300 ease-out pointer-events-none">
+                                  <div className="absolute bottom-[130%] left-1/2 w-max -translate-x-1/2 px-3 py-1 bg-dark-navy text-white text-sm rounded-md shadow-lg opacity-0 scale-95 group-hover/attendee:opacity-100 group-hover/attendee:scale-100 group-hover/attendee:-translate-y-2 transform transition-all duration-300 ease-out pointer-events-none z-10">
                                       {attendee.fullName.split(' ')[0]}
                                       <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-dark-navy"></div>
                                   </div>
-                                  <div className="absolute -top-7 bg-white px-2 py-1 text-2xl rounded-full shadow-md transition-transform hover:scale-110">
+                                  <div className="absolute -top-7 bg-white px-2 py-1 text-2xl rounded-full shadow-md transition-transform hover:scale-110 z-0">
                                       {attendee.mood}
                                   </div>
-                                  <div className="w-16 h-16 bg-gradient-to-br from-solar-orange to-solar-pink rounded-full flex items-center justify-center text-white font-bold text-xl shadow-inner">
+                                  <div className="w-16 h-16 bg-gradient-to-br from-solar-orange to-solar-pink rounded-full flex items-center justify-center text-white font-bold text-xl shadow-inner cursor-default">
                                       {attendee.initials}
                                   </div>
                               </div>

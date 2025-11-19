@@ -8,7 +8,8 @@ const Navbar: React.FC = () => {
   useEffect(() => {
     const handleScroll = () => {
       const offset = window.scrollY;
-      if (offset > 50) {
+      // Trigger earlier for a more responsive feel
+      if (offset > 20) {
         setIsScrolled(true);
       } else {
         setIsScrolled(false);
@@ -30,20 +31,24 @@ const Navbar: React.FC = () => {
     { href: '#checkin', label: 'Confirme sua presença', isButton: true },
   ];
 
-  const navClass = isScrolled 
-    ? 'bg-gradient-nav shadow-lg' 
-    : 'bg-transparent';
+  // Optimized logic for smooth transition
+  // We keep 'left-1/2 -translate-x-1/2' CONSTANT to avoid layout jumps.
+  // We animate width, top, borderRadius, and background.
+  const baseNavClass = "fixed left-1/2 transform -translate-x-1/2 z-50 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]";
+  
+  const dynamicNavClass = isScrolled 
+    ? 'top-4 w-[95%] max-w-6xl rounded-full bg-gradient-nav shadow-2xl border border-white/20 backdrop-blur-md py-0' 
+    : 'top-0 w-full max-w-none rounded-none bg-transparent border-transparent shadow-none py-2';
 
   const linkClasses = "text-white hover:text-solar-yellow transition duration-300 font-semibold uppercase tracking-wider text-sm cursor-pointer";
   
-  // Manual smooth scroll function to guarantee navigation works perfectly
   const handleScrollTo = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
     const targetId = href.replace('#', '');
     const element = document.getElementById(targetId);
     
     if (element) {
-      const navbarHeight = 80; // Height of the fixed navbar
+      const navbarHeight = 80; 
       const elementPosition = element.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - navbarHeight;
 
@@ -52,26 +57,26 @@ const Navbar: React.FC = () => {
         behavior: "smooth"
       });
       
-      setIsOpen(false); // Close mobile menu if open
+      setIsOpen(false); 
     }
   };
 
   return (
     <>
-      <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${navClass}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <nav className={`${baseNavClass} ${dynamicNavClass}`}>
+        <div className="w-full px-6 sm:px-8">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
             <div className="flex-shrink-0">
               <a 
                 href="#home" 
                 onClick={(e) => handleScrollTo(e, '#home')}
-                className="cursor-pointer block"
+                className="cursor-pointer block group"
               >
                 <img 
                     src="https://raw.githubusercontent.com/mktspacenetwork/tardezinha/main/tardezinhadaSpace_logo.png" 
                     alt="Tardezinha da Space" 
-                    className="h-16 w-auto"
+                    className="h-16 w-auto transition-all duration-300 ease-in-out transform group-hover:scale-110 group-hover:-rotate-3 group-hover:drop-shadow-[0_0_10px_rgba(255,183,77,0.8)]"
                 />
               </a>
             </div>
@@ -131,7 +136,7 @@ const Navbar: React.FC = () => {
         </div>
       </nav>
 
-       {/* Mobile Menu */}
+       {/* Mobile Menu Overlay */}
       <div className={`fixed top-0 left-0 w-full h-screen bg-gradient-nav z-40 transform ${isOpen ? 'translate-y-0' : '-translate-y-full'} transition-transform duration-300 ease-in-out md:hidden`} id="mobile-menu">
         <div className="h-full flex flex-col items-center justify-center space-y-4">
             {navLinks.map(link => {

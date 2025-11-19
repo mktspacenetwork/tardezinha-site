@@ -16,11 +16,13 @@ const Footer: React.FC<FooterProps> = ({ onAdminClick, onOpenRules }) => {
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
         {/* Column 1: About */}
         <div className="lg:col-span-2">
-          <img 
-            src="https://raw.githubusercontent.com/mktspacenetwork/tardezinha/main/tardezinhadaSpace_logo.png" 
-            alt="Tardezinha da Space" 
-            className="h-16 w-auto mb-6"
-          />
+          <a href="#home" className="inline-block group">
+            <img 
+                src="https://raw.githubusercontent.com/mktspacenetwork/tardezinha/main/tardezinhadaSpace_logo.png" 
+                alt="Tardezinha da Space" 
+                className="h-16 w-auto mb-6 transition-all duration-300 ease-in-out transform group-hover:scale-110 group-hover:-rotate-3 group-hover:drop-shadow-[0_0_10px_rgba(255,183,77,0.8)]"
+            />
+          </a>
           <p className="text-gray-400 mb-4 max-w-md">
             Muito mais que um evento: é o nosso orgulho em festa, brindando à união, às vitórias e ao time que faz tudo acontecer.
           </p>
