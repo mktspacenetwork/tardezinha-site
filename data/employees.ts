@@ -1,0 +1,26 @@
+import { Employee } from '../types';
+
+export const employees: Employee[] = [
+  { name: 'Alice Rodrigues', role: 'Desenvolvedora Frontend' },
+  { name: 'Bruno Costa', role: 'Desenvolvedor Backend' },
+  { name: 'Carla Dias', role: 'UI/UX Designer' },
+  { name: 'Daniel Alves', role: 'Gerente de Projetos' },
+  { name: 'Eduarda Martins', role: 'Analista de QA' },
+  { name: 'Felipe Andrade', role: 'Engenheiro de DevOps' },
+  { name: 'Gabriela Barros', role: 'Product Owner' },
+  { name: 'Heitor Cardoso', role: 'Analista de Dados' },
+  { name: 'Isabela Ferreira', role: 'Desenvolvedora Full-Stack' },
+  { name: 'João Gonçalves', role: 'Arquiteto de Software' },
+  { name: 'Larissa Lima', role: 'Scrum Master' },
+  { name: 'Marcos Nunes', role: 'Desenvolvedor Mobile' },
+  { name: 'Natália Oliveira', role: 'Especialista em RH' },
+  { name: 'Otávio Pereira', role: 'Analista de Sistemas' },
+  { name: 'Patrícia Ribeiro', role: 'Designer Gráfico' },
+  { name: 'Quintino Santos', role: 'CEO' },
+  { name: 'Rafaela Souza', role: 'Diretora de Tecnologia' },
+  { name: 'Sérgio Teixeira', role: 'Analista de Negócios' },
+  { name: 'Tatiane Vasconcelos', role: 'Coordenadora de Marketing' },
+  { name: 'Ulisses Xavier', role: 'Estagiário de Desenvolvimento' },
+  { name: 'Valentina Melo', role: 'Analista Financeiro' },
+  { name: 'Wagner Pinto', role: 'Suporte Técnico' },
+];

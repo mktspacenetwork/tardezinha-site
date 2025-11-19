@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tardezinha da Space</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&family=Pacifico&display=swap" rel="stylesheet">
+    <style>
+      html {
+        scroll-behavior: smooth;
+      }
+      /* Offset for anchor links to account for the fixed navbar */
+      section[id],
+      header[id],
+      footer[id] {
+        scroll-margin-top: 80px; /* h-20 = 5rem = 80px */
+      }
+    </style>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Poppins', 'sans-serif'],
+              display: ['Pacifico', 'cursive'],
+            },
+            colors: {
+              'solar-yellow': '#FFB74D',
+              'solar-orange': '#FF8A65',
+              'solar-pink': '#FF4081',
+              'solar-purple': '#8E24AA',
+              'brand-background': '#FFF8F0',
+              'dark-navy': '#1A202C',
+            },
+            backgroundImage: {
+              'gradient-solar': 'linear-gradient(135deg, #FFB74D 0%, #FF8A65 50%, #FF4081 100%)',
+              'gradient-nav': 'linear-gradient(to right, #FDBF8A, #F96D69)',
+            },
+            aspectRatio: {
+              '16/9': '16 / 9',
+            },
+            animation: {
+                fadeIn: 'fadeIn 0.3s ease-in-out',
+                fadeInUp: 'fadeInUp 0.8s ease-out forwards',
+                'kenburns-1': 'kenburns-1 15s ease-out forwards',
+                'kenburns-2': 'kenburns-2 15s ease-out forwards',
+                'kenburns-3': 'kenburns-3 15s ease-out forwards',
+                marquee: 'marquee 40s linear infinite',
+            },
+            keyframes: {
+                fadeIn: {
+                    '0%': { opacity: '0' },
+                    '100%': { opacity: '1' },
+                },
+                fadeInUp: {
+                    '0%': { opacity: '0', transform: 'translateY(30px)' },
+                    '100%': { opacity: '1', transform: 'translateY(0)' },
+                },
+                'kenburns-1': {
+                  '0%': { transform: 'scale(1.05) translate(0, 0)' },
+                  '100%': { transform: 'scale(1.15) translate(-2%, -1%)' },
+                },
+                'kenburns-2': {
+                    '0%': { transform: 'scale(1.05) translate(0, 0)' },
+                    '100%': { transform: 'scale(1.15) translate(2%, 1%)' },
+                },
+                'kenburns-3': {
+                    '0%': { transform: 'scale(1.05) translate(0, 0)' },
+                    '100%': { transform: 'scale(1.15) translate(0, 0)' },
+                },
+                marquee: {
+                  '0%': { transform: 'translateX(0)' },
+                  '100%': { transform: 'translateX(-50%)' },
+                },
+            },
+          }
+        }
+      }
+    </script>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
