@@ -7,8 +7,10 @@ This is a React + TypeScript event management application for "Tardezinha da Spa
 
 ## Recent Changes (November 19, 2025)
 - Configured Vite to run on port 5000 with proper Replit proxy support
+- Added `allowedHosts: true` to Vite config to allow Replit proxy access
 - Added HMR configuration for hot module replacement in Replit environment
 - Migrated Supabase credentials to environment variables for security
+- Successfully connected to Supabase backend (credentials configured)
 - Set up proper ESM module support in vite.config.ts
 - Configured deployment settings for static site deployment
 - Installed all npm dependencies
@@ -100,11 +102,11 @@ npm run preview   # Preview production build
 ## Important Notes
 
 ### Supabase Setup
-1. Create a Supabase project at https://supabase.com
-2. Get your project URL and anon key from Project Settings → API
-3. Add them as environment variables in Replit:
-   - `SUPABASE_URL`
-   - `SUPABASE_KEY`
+✅ **Status: Connected** - The application is currently connected to Supabase with the following configuration:
+- Project URL: Configured via `SUPABASE_URL` environment variable
+- Anon Key: Configured via `SUPABASE_KEY` environment variable
+
+**Note:** The Supabase credentials are stored securely in Replit Secrets and are automatically injected into the application at build time through Vite's define configuration.
 
 ### Tailwind CSS
 Currently using Tailwind CSS via CDN (included in index.html). This is fine for development but should be migrated to PostCSS for production to reduce bundle size and improve performance.

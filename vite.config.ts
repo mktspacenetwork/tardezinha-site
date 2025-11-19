@@ -10,7 +10,7 @@ export default defineConfig(() => {
       server: {
         port: 5000,
         host: '0.0.0.0',
-        allowedHosts: true,
+        allowedHosts: true as const,
         hmr: {
           clientPort: 443,
         },
