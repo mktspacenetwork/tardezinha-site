@@ -16,11 +16,6 @@ export default defineConfig(() => {
         },
       },
       plugins: [react()],
-      define: {
-        'import.meta.env.VITE_GEMINI_API_KEY': JSON.stringify(process.env.GEMINI_API_KEY),
-        'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(process.env.VITE_SUPABASE_URL),
-        'import.meta.env.VITE_SUPABASE_KEY': JSON.stringify(process.env.VITE_SUPABASE_KEY)
-      },
       resolve: {
         alias: {
           '@': path.resolve(__dirname, '.'),
