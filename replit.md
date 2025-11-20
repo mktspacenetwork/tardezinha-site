@@ -5,7 +5,16 @@ This is a React + TypeScript event management application for "Tardezinha da Spa
 
 **Current State:** The application is fully configured and running in the Replit environment. It's ready for development and deployment.
 
-## Recent Changes (November 19, 2025)
+## Recent Changes (November 20, 2025)
+- **Supabase Configuration Fix**: Fixed critical bug - changed from `process.env` to `import.meta.env.VITE_*` for proper Vite environment variable access
+- **Checkin Redesign**: Completely redesigned following reference design with gradient title, "100% GRÁTIS" badge, prominent green CTA button, transport warning, countdown, and confirmed attendees carousel
+- **Admin Dashboard Overhaul**: Professional design with dark slate header, refined tabs with elegant SVG icons, soft color palette (blues/grays/emerald), improved statistics cards
+- **Purchase Verification System**: Added attendance confirmation requirement before accessing purchase options - blocked buttons show informative alerts and scroll to checkin section
+- **Mobile-First Responsive Design**: Ensured complete responsiveness across all components with Tailwind breakpoints (sm:, md:, lg:)
+- Created `vite-env.d.ts` for proper TypeScript environment variable declarations
+- Updated all components to use professional SVG icons instead of emojis for better visual consistency
+
+## Previous Changes (November 19, 2025)
 - Configured Vite to run on port 5000 with proper Replit proxy support
 - Added `allowedHosts: true` to Vite config to allow Replit proxy access
 - Added HMR configuration for hot module replacement in Replit environment
@@ -52,13 +61,27 @@ This is a React + TypeScript event management application for "Tardezinha da Spa
 ```
 
 ### Key Features
-- Event countdown timer
-- Employee check-in system
-- Photo gallery
-- Purchase options for event extras
-- Admin panel for event management
-- FAQ section
-- Event rules display
+- **Event Countdown Timer**: Dynamic countdown showing days until the event
+- **Employee Check-in System**: 
+  - Autocomplete search for 156 employees from Supabase database
+  - Companion tracking (max 2 adults + 5 children with RG/CPF validation)
+  - Bus boarding management with seat allocation
+  - Real-time confirmation carousel showing confirmed attendees
+- **Photo Gallery**: Showcase of previous event photos
+- **Purchase Options**: 
+  - Guest daily passes (R$ 103,78)
+  - Bus transfer tickets (R$ 64,19)
+  - Blocked until attendance confirmation
+  - Automatic redirect to purchase platform
+- **Professional Admin Dashboard**:
+  - Real-time statistics (confirmations, adults, children, daily passes, transport)
+  - Attendance management with full CRUD operations
+  - Bus boarding list with check-in/check-out tracking
+  - Employee database management
+  - Password-protected access (password: 'space2025')
+- **FAQ Section**: Common questions and answers
+- **Event Rules Display**: Complete event guidelines and regulations
+- **Mobile-First Design**: Fully responsive across all devices
 
 ## Configuration
 
