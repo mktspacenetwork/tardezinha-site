@@ -35,76 +35,112 @@ const PurchaseOptions: React.FC<PurchaseOptionsProps> = ({ showIntro }) => {
     };
   }, []);
 
-  const handlePurchaseClick = () => {
+  const handlePurchaseClick = (confirmed: boolean) => {
+    if (!confirmed) {
+      alert('⚠️ Você precisa confirmar sua presença antes de comprar opcionais!\n\nRole a página para cima e clique em "QUERO PARTICIPAR!" para fazer sua confirmação primeiro.');
+      const checkinSection = document.getElementById('checkin');
+      if (checkinSection) {
+        checkinSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      return;
+    }
+    
     setIsModalOpen(true);
     setTimeout(() => {
       window.location.href = 'https://useingresso.com/evento/691b30d3dc465aca63b2bbef';
-    }, 5000); // Wait 5 seconds before redirecting
+    }, 5000);
   };
 
   return (
     <>
-      <section id="purchase-options" ref={sectionRef} className="bg-white py-20 px-4">
+      <section id="purchase-options" ref={sectionRef} className="bg-white py-12 md:py-20 px-4">
         <div className="max-w-4xl mx-auto">
           {showIntro && (
-              <div className="text-center mb-12 animate-fadeInUp">
-                  <h3 className="text-2xl font-bold text-dark-navy">Presença confirmada!</h3>
-                  <p className="text-gray-600 mt-2">Melhore sua experiência levando um acompanhante ou garantindo seu transporte.</p>
+              <div className="text-center mb-8 md:mb-12 animate-fadeInUp">
+                  <div className="inline-flex items-center gap-2 bg-green-50 border-2 border-green-400 text-green-800 px-4 md:px-6 py-3 rounded-xl mb-4">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="font-bold text-base md:text-lg">Presença confirmada!</span>
+                  </div>
+                  <p className="text-gray-600 text-base md:text-lg">Agora você pode adquirir opcionais para melhorar sua experiência.</p>
               </div>
           )}
-          <h2 className="text-4xl md:text-6xl font-black text-center mb-12 uppercase bg-gradient-to-r from-solar-orange to-solar-pink bg-clip-text text-transparent">Opcionais de Compra</h2>
+          {!showIntro && (
+              <div className="text-center mb-8 md:mb-12 animate-fadeInUp">
+                  <div className="inline-flex items-center gap-2 bg-amber-50 border-2 border-amber-400 text-amber-800 px-4 md:px-6 py-3 rounded-xl mb-4">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <span className="font-bold text-base md:text-lg">Atenção!</span>
+                  </div>
+                  <p className="text-gray-700 font-semibold text-base md:text-lg mb-2">Confirme sua presença primeiro para desbloquear as compras</p>
+                  <p className="text-sm md:text-base text-gray-600">Role para cima e clique em "QUERO PARTICIPAR!"</p>
+              </div>
+          )}
+          <h2 className="text-3xl md:text-5xl lg:text-6xl font-black text-center mb-8 md:mb-12 uppercase bg-gradient-to-r from-orange-400 via-pink-500 to-pink-600 bg-clip-text text-transparent">Opcionais de Compra</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             
             {/* Guest Ticket Card */}
             <div
-              className={`bg-gray-50 border border-gray-200 rounded-2xl p-8 text-left flex flex-col shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 ease-out transform ${
+              className={`bg-gradient-to-br from-white to-gray-50 border-2 ${showIntro ? 'border-pink-200' : 'border-gray-200'} rounded-2xl p-6 md:p-8 text-left flex flex-col shadow-lg hover:shadow-2xl transition-all duration-300 ease-out ${
                 isVisible
                   ? 'opacity-100 translate-y-0'
                   : 'opacity-0 translate-y-10'
               }`}
             >
-              <h3 className="text-2xl font-bold text-dark-navy mb-4">Diária Acompanhante</h3>
+              <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-4">Diária Acompanhante</h3>
               <div className="mb-6">
-                  <p className="text-4xl font-black text-solar-orange">12x R$10,56</p>
-                  <p className="text-sm text-gray-500">(taxas inclusas)</p>
-                  <p className="text-base font-semibold text-gray-600 mt-2">Ou R$ 103,78 à vista.</p>
+                  <p className="text-3xl md:text-4xl font-black bg-gradient-to-r from-orange-500 to-pink-600 bg-clip-text text-transparent">12x R$10,56</p>
+                  <p className="text-xs md:text-sm text-gray-500">(taxas inclusas)</p>
+                  <p className="text-sm md:text-base font-semibold text-gray-600 mt-2">Ou R$ 103,78 à vista.</p>
               </div>
-              <ul className="text-gray-600 space-y-3 mb-6 flex-grow">
+              <ul className="text-gray-600 space-y-2 md:space-y-3 mb-6 flex-grow text-sm md:text-base">
                 <li className="flex items-center"><CheckIcon /> Diária do sítio</li>
                 <li className="flex items-center"><CheckIcon /> Open Chopp + Bebidas</li>
                 <li className="flex items-center"><CheckIcon /> Almoço a vontade</li>
               </ul>
               <button 
-                onClick={handlePurchaseClick}
-                className="mt-auto w-full bg-solar-pink hover:bg-solar-orange text-white font-bold py-3 px-6 rounded-lg transition duration-300 transform hover:scale-105"
+                onClick={() => handlePurchaseClick(showIntro)}
+                aria-disabled={!showIntro}
+                className={`mt-auto w-full font-bold py-3 md:py-4 px-6 rounded-xl transition-all duration-300 text-base md:text-lg ${
+                  showIntro
+                    ? 'bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105'
+                    : 'bg-gray-300 text-gray-500 cursor-pointer opacity-60 hover:opacity-80'
+                }`}
               >
-                Comprar Diária
+                {showIntro ? 'Comprar Diária' : '🔒 Bloqueado - Clique para saber mais'}
               </button>
             </div>
 
             {/* Bus Transfer Card */}
             <div
-              className={`bg-gray-50 border border-gray-200 rounded-2xl p-8 text-left flex flex-col shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 ease-out transform ${
+              className={`bg-gradient-to-br from-white to-gray-50 border-2 ${showIntro ? 'border-pink-200' : 'border-gray-200'} rounded-2xl p-6 md:p-8 text-left flex flex-col shadow-lg hover:shadow-2xl transition-all duration-300 ease-out ${
                 isVisible
                   ? 'opacity-100 translate-y-0'
                   : 'opacity-0 translate-y-10'
               }`}
               style={{ transitionDelay: '150ms' }}
             >
-              <h3 className="text-2xl font-bold text-dark-navy mb-4">Transfer de Ônibus</h3>
+              <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-4">Transfer de Ônibus</h3>
                <div className="mb-6">
-                  <p className="text-4xl font-black text-solar-orange">12x R$6,53</p>
-                  <p className="text-sm text-gray-500">(Taxas inclusas)</p>
-                  <p className="text-base font-semibold text-gray-600 mt-2">ou R$ 64,19 à vista</p>
+                  <p className="text-3xl md:text-4xl font-black bg-gradient-to-r from-orange-500 to-pink-600 bg-clip-text text-transparent">12x R$6,53</p>
+                  <p className="text-xs md:text-sm text-gray-500">(Taxas inclusas)</p>
+                  <p className="text-sm md:text-base font-semibold text-gray-600 mt-2">ou R$ 64,19 à vista</p>
               </div>
-              <div className="text-gray-600 mb-6 flex-grow">
+              <div className="text-gray-600 mb-6 flex-grow text-sm md:text-base">
                  <p className="flex items-start"><CheckIcon /> Ida e volta até o local do evento em ônibus moderno e confortável a partir das Sedes da Space.</p>
               </div>
               <button 
-                onClick={handlePurchaseClick}
-                className="mt-auto w-full bg-solar-pink hover:bg-solar-orange text-white font-bold py-3 px-6 rounded-lg transition duration-300 transform hover:scale-105"
+                onClick={() => handlePurchaseClick(showIntro)}
+                aria-disabled={!showIntro}
+                className={`mt-auto w-full font-bold py-3 md:py-4 px-6 rounded-xl transition-all duration-300 text-base md:text-lg ${
+                  showIntro
+                    ? 'bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105'
+                    : 'bg-gray-300 text-gray-500 cursor-pointer opacity-60 hover:opacity-80'
+                }`}
               >
-                Reservar Transfer
+                {showIntro ? 'Reservar Transfer' : '🔒 Bloqueado - Clique para saber mais'}
               </button>
             </div>
 

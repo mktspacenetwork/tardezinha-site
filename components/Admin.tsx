@@ -310,14 +310,17 @@ const Admin: React.FC<AdminProps> = ({ onExitAdmin }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       {/* Header */}
-      <div className="bg-gradient-solar text-white px-4 py-6 shadow-lg">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <h1 className="text-3xl font-black">Dashboard Admin - Tardezinha da Space</h1>
+      <div className="bg-gradient-to-r from-slate-800 to-slate-900 text-white px-4 md:px-6 py-4 md:py-6 shadow-xl border-b border-slate-700">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Dashboard Admin</h1>
+            <p className="text-sm text-slate-300 mt-1">Tardezinha da Space</p>
+          </div>
           <button
             onClick={onExitAdmin}
-            className="bg-white text-solar-purple font-bold px-6 py-2 rounded-full hover:bg-opacity-90 transition-all"
+            className="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white font-semibold px-4 md:px-6 py-2 rounded-lg transition-all border border-white/20"
           >
             Sair
           </button>
@@ -325,22 +328,22 @@ const Admin: React.FC<AdminProps> = ({ onExitAdmin }) => {
       </div>
 
       {/* Tabs */}
-      <div className="bg-white shadow-md">
+      <div className="bg-white shadow-sm border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex gap-2 overflow-x-auto">
+          <div className="flex gap-1 overflow-x-auto scrollbar-hide">
             {[
-              { id: 'dashboard', label: '📊 Dashboard', icon: '📊' },
-              { id: 'confirmations', label: '📋 Confirmações', icon: '📋' },
-              { id: 'bus', label: '🚌 Gestão de Ônibus', icon: '🚌' },
-              { id: 'employees', label: '👥 Colaboradores', icon: '👥' },
+              { id: 'dashboard', label: 'Dashboard' },
+              { id: 'confirmations', label: 'Confirmações' },
+              { id: 'bus', label: 'Gestão de Ônibus' },
+              { id: 'employees', label: 'Colaboradores' },
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as TabType)}
-                className={`px-6 py-4 font-bold border-b-4 transition-all whitespace-nowrap ${
+                className={`px-4 md:px-6 py-3 md:py-4 font-semibold border-b-2 transition-all whitespace-nowrap text-sm md:text-base ${
                   activeTab === tab.id
-                    ? 'border-solar-orange text-solar-orange'
-                    : 'border-transparent text-gray-600 hover:text-gray-800'
+                    ? 'border-slate-800 text-slate-900 bg-slate-50'
+                    : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50/50'
                 }`}
               >
                 {tab.label}
@@ -359,31 +362,61 @@ const Admin: React.FC<AdminProps> = ({ onExitAdmin }) => {
         {/* Dashboard Tab */}
         {activeTab === 'dashboard' && (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <div className="text-4xl mb-2">👥</div>
-                <div className="text-3xl font-black text-gray-800">{stats.totalConfirmed}</div>
-                <div className="text-sm text-gray-600">Confirmações</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+              <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="text-3xl font-bold text-slate-800">{stats.totalConfirmed}</div>
+                <div className="text-sm text-slate-500 mt-1">Confirmações</div>
               </div>
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <div className="text-4xl mb-2">🧑</div>
-                <div className="text-3xl font-black text-gray-800">{stats.totalAdults}</div>
-                <div className="text-sm text-gray-600">Acompanhantes Adultos</div>
+              <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="text-3xl font-bold text-slate-800">{stats.totalAdults}</div>
+                <div className="text-sm text-slate-500 mt-1">Acompanhantes Adultos</div>
               </div>
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <div className="text-4xl mb-2">👶</div>
-                <div className="text-3xl font-black text-gray-800">{stats.totalChildren}</div>
-                <div className="text-sm text-gray-600">Crianças</div>
+              <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="text-3xl font-bold text-slate-800">{stats.totalChildren}</div>
+                <div className="text-sm text-slate-500 mt-1">Crianças</div>
               </div>
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <div className="text-4xl mb-2">🏖️</div>
-                <div className="text-3xl font-black text-gray-800">{stats.totalDailyPasses}</div>
-                <div className="text-sm text-gray-600">Diárias Necessárias</div>
+              <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="text-3xl font-bold text-slate-800">{stats.totalDailyPasses}</div>
+                <div className="text-sm text-slate-500 mt-1">Diárias Necessárias</div>
               </div>
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <div className="text-4xl mb-2">🚌</div>
-                <div className="text-3xl font-black text-gray-800">{stats.totalTransport}</div>
-                <div className="text-sm text-gray-600">Vagas de Ônibus</div>
+              <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="w-12 h-12 bg-rose-100 rounded-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="text-3xl font-bold text-slate-800">{stats.totalTransport}</div>
+                <div className="text-sm text-slate-500 mt-1">Vagas de Ônibus</div>
               </div>
             </div>
 

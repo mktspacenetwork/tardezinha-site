@@ -390,173 +390,230 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
   }
 
   return (
-    <section id="checkin" ref={sectionRef} className="py-20 px-4 bg-gradient-to-br from-solar-yellow via-solar-orange to-solar-pink text-white">
-      <div className="max-w-6xl mx-auto">
-        <div className={`text-center mb-12 ${isVisible ? 'animate-fadeInUp' : 'opacity-0'}`}>
-          <h2 className="text-4xl md:text-5xl font-black mb-4">Confirmação de Presença</h2>
-          <p className="text-xl text-gray-100">
-            Confirme sua presença e garanta sua vaga na Tardezinha da Space!
+    <section id="checkin" ref={sectionRef} className="py-12 md:py-20 px-4 bg-gray-50">
+      <div className="max-w-4xl mx-auto">
+        {/* Cabeçalho da Seção */}
+        <div className={`text-center mb-8 md:mb-12 relative ${isVisible ? 'animate-fadeInUp' : 'opacity-0'}`}>
+          {/* Badge 100% Grátis */}
+          <div className="absolute -top-4 md:-top-6 right-0 md:right-12 bg-gradient-to-br from-green-400 to-green-600 text-white rounded-full px-4 md:px-6 py-2 md:py-3 font-black text-sm md:text-base shadow-lg transform rotate-12 animate-pulse z-10">
+            100% GRÁTIS
+          </div>
+
+          {/* Título com Gradiente */}
+          <h2 className="text-4xl md:text-6xl lg:text-7xl font-black mb-4 md:mb-6 bg-gradient-to-r from-orange-400 via-pink-500 to-pink-600 bg-clip-text text-transparent leading-tight px-4">
+            CONFIRME SUA PRESENÇA
+          </h2>
+
+          {/* Subtítulo */}
+          <p className="text-gray-700 text-lg md:text-xl font-medium mb-6 md:mb-8 px-4">
+            Garanta a sua entrada e não fique de fora.
           </p>
-          {remainingDays > 0 && (
-            <div className="mt-6 inline-block bg-white bg-opacity-20 backdrop-blur-sm px-6 py-3 rounded-full">
-              <p className="text-lg font-semibold">
-                ⏰ Faltam <span className="text-3xl font-black">{remainingDays}</span> dias para o prazo final!
-              </p>
+
+          {/* Botão Quero Participar */}
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-black text-xl md:text-2xl py-4 md:py-5 px-8 md:px-12 rounded-2xl shadow-2xl transition-all transform hover:scale-105 mb-6 uppercase"
+          >
+            QUERO PARTICIPAR!
+          </button>
+
+          {/* Aviso de Vagas */}
+          {remainingSeats < 20 && (
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-red-50 to-pink-50 border-2 border-red-400 text-red-700 px-4 md:px-6 py-3 rounded-lg mb-6 font-semibold text-sm md:text-base">
+              <span className="text-xl">⚠️</span>
+              <span>Restam apenas {remainingSeats} vagas no transporte!</span>
             </div>
           )}
-        </div>
 
-        {/* Carrossel de Confirmados */}
-        <div className="mb-12 overflow-hidden relative">
-          <div className="flex gap-4 animate-marquee">
-            {[...confirmedAttendees, ...confirmedAttendees].map((person, idx) => (
+          {/* Countdown */}
+          {remainingDays > 0 && (
+            <p className="text-gray-800 text-base md:text-lg font-bold mb-4">
+              Você tem apenas <span className="text-2xl md:text-3xl text-pink-600">{remainingDays}</span> dias para confirmar sua presença.
+            </p>
+          )}
+
+          {/* Cortesia */}
+          <p className="text-gray-600 text-sm md:text-base mb-8 px-4">
+            Cortesia exclusiva para colaborador da Space Network, Now, Sampa.
+          </p>
+
+          {/* Separador */}
+          <div className="w-full max-w-3xl mx-auto h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent mb-8 md:mb-12"></div>
+
+          {/* Veja quem já confirmou */}
+          <h3 className="text-2xl md:text-3xl font-black text-gray-800 mb-6 md:mb-8">
+            Veja quem já confirmou
+          </h3>
+
+          {/* Círculos de Confirmados */}
+          <div className="flex flex-wrap justify-center gap-3 md:gap-4 mb-8">
+            {confirmedAttendees.map((person, idx) => (
               <div
                 key={idx}
-                className="flex-shrink-0 bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-4 flex items-center gap-3 shadow-lg"
+                className="relative group"
               >
-                <div className="w-12 h-12 rounded-full bg-solar-purple text-white font-bold flex items-center justify-center text-lg">
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-pink-400 to-pink-600 text-white font-black flex items-center justify-center text-lg md:text-xl shadow-lg transform transition-all hover:scale-110">
                   {person.initials}
+                  <div className="absolute -top-1 -right-1 text-2xl md:text-3xl">
+                    {person.mood}
+                  </div>
                 </div>
-                <div className="text-left">
-                  <div className="font-semibold">{person.fullName}</div>
-                  <div className="text-2xl">{person.mood}</div>
+                <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-20">
+                  {person.fullName}
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Formulário */}
-        <div className="bg-white text-gray-800 rounded-2xl shadow-2xl p-8 max-w-2xl mx-auto">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
-                {error}
+        {/* Modal de Formulário */}
+        {isModalOpen && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+            <div className="bg-white text-gray-800 rounded-3xl shadow-2xl p-6 md:p-8 max-w-2xl w-full my-8 max-h-[90vh] overflow-y-auto">
+              {/* Cabeçalho do Modal */}
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl md:text-3xl font-black text-gray-800">Formulário de Confirmação</h3>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsModalOpen(false);
+                    setError('');
+                  }}
+                  className="text-gray-400 hover:text-gray-600 transition-colors text-3xl font-bold leading-none"
+                >
+                  ×
+                </button>
               </div>
-            )}
 
-            {/* Nome do Colaborador com Autocomplete */}
-            <div className="relative">
-              <label className="block text-sm font-bold mb-2">
-                Nome do Colaborador <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={handleNameChange}
-                onFocus={() => name.length > 1 && setShowSuggestions(true)}
-                placeholder="Digite seu nome para buscar..."
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-solar-orange focus:outline-none"
-                required
-              />
-              
-              {showSuggestions && suggestions.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white border-2 border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                  {suggestions.map((emp, idx) => (
-                    <div
-                      key={idx}
-                      onClick={() => handleSuggestionClick(emp)}
-                      className="px-4 py-3 hover:bg-solar-yellow hover:bg-opacity-20 cursor-pointer border-b last:border-b-0"
-                    >
-                      <div className="font-semibold">{emp.name}</div>
-                      <div className="text-sm text-gray-600">{emp.department}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {selectedEmployee && (
-                <div className="mt-2 p-3 bg-green-100 border border-green-400 rounded-lg flex items-center gap-2">
-                  <span className="text-2xl">✓</span>
-                  <div>
-                    <div className="font-bold text-green-800">{selectedEmployee.name}</div>
-                    <div className="text-sm text-green-700">Colaborador confirmado - {selectedEmployee.department}</div>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {error && (
+                  <div className="bg-red-50 border-2 border-red-400 text-red-700 px-4 py-3 rounded-lg text-sm md:text-base">
+                    {error}
                   </div>
-                </div>
-              )}
-            </div>
+                )}
 
-            {/* RG do Colaborador */}
-            {selectedEmployee && (
-              <div>
-                <label className="block text-sm font-bold mb-2">
-                  RG do Colaborador <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={employeeRG}
-                  onChange={(e) => setEmployeeRG(e.target.value)}
-                  placeholder="Ex: 12.345.678-9"
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-solar-orange focus:outline-none"
-                  required
-                />
-              </div>
-            )}
+                {/* Nome do Colaborador com Autocomplete */}
+                <div className="relative">
+                  <label className="block text-sm md:text-base font-bold mb-2 text-gray-700">
+                    Nome do Colaborador <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={handleNameChange}
+                    onFocus={() => name.length > 1 && setShowSuggestions(true)}
+                    placeholder="Digite seu nome para buscar..."
+                    className="w-full px-4 py-3 md:py-4 border-2 border-gray-300 rounded-xl focus:border-pink-500 focus:ring-2 focus:ring-pink-200 focus:outline-none text-base transition-all"
+                    required
+                  />
+                  
+                  {showSuggestions && suggestions.length > 0 && (
+                    <div className="absolute z-20 w-full mt-2 bg-white border-2 border-gray-300 rounded-xl shadow-2xl max-h-60 overflow-y-auto">
+                      {suggestions.map((emp, idx) => (
+                        <div
+                          key={idx}
+                          onClick={() => handleSuggestionClick(emp)}
+                          className="px-4 py-3 hover:bg-pink-50 cursor-pointer border-b last:border-b-0 transition-colors"
+                        >
+                          <div className="font-semibold text-gray-800">{emp.name}</div>
+                          <div className="text-sm text-gray-500">{emp.department}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
-            {/* Acompanhantes? */}
-            {selectedEmployee && employeeRG && (
-              <div>
-                <label className="block text-sm font-bold mb-3">
-                  Vai levar acompanhantes? <span className="text-red-500">*</span>
-                </label>
-                <div className="flex gap-4">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setHasCompanions(true);
-                      if (adults.length === 0 && children.length === 0) {
-                        addAdult();
-                      }
-                    }}
-                    className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${
-                      hasCompanions === true
-                        ? 'bg-solar-orange text-white'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                    }`}
-                  >
-                    Sim
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setHasCompanions(false);
-                      setAdults([]);
-                      setChildren([]);
-                    }}
-                    className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${
-                      hasCompanions === false
-                        ? 'bg-solar-orange text-white'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                    }`}
-                  >
-                    Não
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Formulário de Acompanhantes */}
-            {hasCompanions && (
-              <div className="space-y-6 bg-gray-50 p-6 rounded-lg">
-                <div className="text-center pb-4 border-b">
-                  <h3 className="text-xl font-bold text-gray-800 mb-2">Dados dos Acompanhantes</h3>
-                  <p className="text-sm text-gray-600">Até 2 adultos e 5 crianças</p>
+                  {selectedEmployee && (
+                    <div className="mt-3 p-3 md:p-4 bg-green-50 border-2 border-green-400 rounded-xl flex items-center gap-3">
+                      <span className="text-2xl md:text-3xl">✓</span>
+                      <div>
+                        <div className="font-bold text-green-800 text-base md:text-lg">{selectedEmployee.name}</div>
+                        <div className="text-sm text-green-600">Colaborador confirmado - {selectedEmployee.department}</div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                {/* Adultos */}
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="font-bold text-lg">Acompanhantes Adultos ({adults.length}/2)</h4>
-                    {adults.length < 2 && (
+                {/* RG do Colaborador */}
+                {selectedEmployee && (
+                  <div>
+                    <label className="block text-sm md:text-base font-bold mb-2 text-gray-700">
+                      RG do Colaborador <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={employeeRG}
+                      onChange={(e) => setEmployeeRG(e.target.value)}
+                      placeholder="Ex: 12.345.678-9"
+                      className="w-full px-4 py-3 md:py-4 border-2 border-gray-300 rounded-xl focus:border-pink-500 focus:ring-2 focus:ring-pink-200 focus:outline-none text-base transition-all"
+                      required
+                    />
+                  </div>
+                )}
+
+                {/* Acompanhantes? */}
+                {selectedEmployee && employeeRG && (
+                  <div>
+                    <label className="block text-sm md:text-base font-bold mb-3 text-gray-700">
+                      Vai levar acompanhantes? <span className="text-red-500">*</span>
+                    </label>
+                    <div className="grid grid-cols-2 gap-3 md:gap-4">
                       <button
                         type="button"
-                        onClick={addAdult}
-                        className="bg-solar-purple text-white px-4 py-2 rounded-lg font-semibold hover:bg-opacity-90 transition-all"
+                        onClick={() => {
+                          setHasCompanions(true);
+                          if (adults.length === 0 && children.length === 0) {
+                            addAdult();
+                          }
+                        }}
+                        className={`py-3 md:py-4 px-6 rounded-xl font-bold transition-all text-base md:text-lg ${
+                          hasCompanions === true
+                            ? 'bg-gradient-to-r from-pink-500 to-pink-600 text-white shadow-lg'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
                       >
-                        + Adicionar Adulto
+                        Sim
                       </button>
-                    )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setHasCompanions(false);
+                          setAdults([]);
+                          setChildren([]);
+                        }}
+                        className={`py-3 md:py-4 px-6 rounded-xl font-bold transition-all text-base md:text-lg ${
+                          hasCompanions === false
+                            ? 'bg-gradient-to-r from-pink-500 to-pink-600 text-white shadow-lg'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        Não
+                      </button>
+                    </div>
                   </div>
+                )}
+
+                {/* Formulário de Acompanhantes */}
+                {hasCompanions && (
+                  <div className="space-y-6 bg-gray-50 p-4 md:p-6 rounded-xl">
+                    <div className="text-center pb-4 border-b border-gray-300">
+                      <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-2">Dados dos Acompanhantes</h3>
+                      <p className="text-sm text-gray-600">Até 2 adultos e 5 crianças</p>
+                    </div>
+
+                    {/* Adultos */}
+                    <div>
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+                        <h4 className="font-bold text-base md:text-lg text-gray-800">Acompanhantes Adultos ({adults.length}/2)</h4>
+                        {adults.length < 2 && (
+                          <button
+                            type="button"
+                            onClick={addAdult}
+                            className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:shadow-md transition-all text-sm md:text-base whitespace-nowrap"
+                          >
+                            + Adicionar Adulto
+                          </button>
+                        )}
+                      </div>
 
                   {adults.map((adult, idx) => (
                     <div key={idx} className="bg-white p-4 rounded-lg mb-4 border-2 border-gray-200">
@@ -691,78 +748,80 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
               </div>
             )}
 
-            {/* Transporte */}
-            {selectedEmployee && hasCompanions !== null && (
-              <div>
-                <label className="block text-sm font-bold mb-3">
-                  Deseja utilizar o transporte (ônibus)? <span className="text-red-500">*</span>
-                </label>
-                <div className="flex gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setWantsTransport(true)}
-                    className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${
-                      wantsTransport === true
-                        ? 'bg-solar-orange text-white'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                    }`}
-                  >
-                    Sim
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setWantsTransport(false)}
-                    className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${
-                      wantsTransport === false
-                        ? 'bg-solar-orange text-white'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                    }`}
-                  >
-                    Não
-                  </button>
-                </div>
-                {wantsTransport && (
-                  <p className="text-sm text-gray-600 mt-2">
-                    Vagas restantes no ônibus: <span className="font-bold">{remainingSeats}</span>
-                  </p>
+                {/* Transporte */}
+                {selectedEmployee && hasCompanions !== null && (
+                  <div>
+                    <label className="block text-sm md:text-base font-bold mb-3 text-gray-700">
+                      Deseja utilizar o transporte (ônibus)? <span className="text-red-500">*</span>
+                    </label>
+                    <div className="grid grid-cols-2 gap-3 md:gap-4">
+                      <button
+                        type="button"
+                        onClick={() => setWantsTransport(true)}
+                        className={`py-3 md:py-4 px-6 rounded-xl font-bold transition-all text-base md:text-lg ${
+                          wantsTransport === true
+                            ? 'bg-gradient-to-r from-pink-500 to-pink-600 text-white shadow-lg'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        Sim
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setWantsTransport(false)}
+                        className={`py-3 md:py-4 px-6 rounded-xl font-bold transition-all text-base md:text-lg ${
+                          wantsTransport === false
+                            ? 'bg-gradient-to-r from-pink-500 to-pink-600 text-white shadow-lg'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        Não
+                      </button>
+                    </div>
+                    {wantsTransport && (
+                      <p className="text-sm text-gray-600 mt-3 text-center">
+                        Vagas restantes no ônibus: <span className="font-bold text-pink-600">{remainingSeats}</span>
+                      </p>
+                    )}
+                  </div>
                 )}
-              </div>
-            )}
 
-            {/* Termos e Condições */}
-            {wantsTransport !== null && (
-              <div className="flex items-start gap-3">
-                <input
-                  type="checkbox"
-                  id="terms"
-                  checked={agreedToRules}
-                  onChange={(e) => setAgreedToRules(e.target.checked)}
-                  className="mt-1 w-5 h-5"
-                />
-                <label htmlFor="terms" className="text-sm">
-                  Concordo com os{' '}
-                  <button
-                    type="button"
-                    onClick={handleRulesClick}
-                    className="text-solar-purple font-bold underline hover:text-solar-pink"
-                  >
-                    termos e condições do evento
-                  </button>
-                  {' '}e confirmo que as informações fornecidas estão corretas.
-                </label>
-              </div>
-            )}
+                {/* Termos e Condições */}
+                {wantsTransport !== null && (
+                  <div className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      id="terms"
+                      checked={agreedToRules}
+                      onChange={(e) => setAgreedToRules(e.target.checked)}
+                      className="mt-1 w-5 h-5 accent-pink-600"
+                    />
+                    <label htmlFor="terms" className="text-sm md:text-base text-gray-700">
+                      Concordo com os{' '}
+                      <button
+                        type="button"
+                        onClick={handleRulesClick}
+                        className="text-pink-600 font-bold underline hover:text-pink-700"
+                      >
+                        termos e condições do evento
+                      </button>
+                      {' '}e confirmo que as informações fornecidas estão corretas.
+                    </label>
+                  </div>
+                )}
 
-            {/* Botão de Enviar */}
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full bg-gradient-solar text-white font-black py-4 px-8 rounded-full text-lg hover:shadow-2xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-            >
-              {isSubmitting ? 'Confirmando...' : 'Confirmar Presença 🎉'}
-            </button>
-          </form>
-        </div>
+                {/* Botão de Enviar */}
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full bg-gradient-to-r from-pink-500 via-pink-600 to-orange-500 text-white font-black py-4 md:py-5 px-8 rounded-2xl text-lg md:text-xl hover:shadow-2xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none uppercase"
+                >
+                  {isSubmitting ? 'Confirmando...' : 'Confirmar Presença 🎉'}
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
