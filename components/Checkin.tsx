@@ -111,7 +111,12 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
     setName(value);
     setSelectedEmployee(null);
     
+    console.log('🔍 Digitando:', value);
+    console.log('✅ Supabase configurado?', isSupabaseConfigured());
+    console.log('📊 URL:', import.meta.env.VITE_SUPABASE_URL);
+    
     if (value.length > 1 && isSupabaseConfigured()) {
+      console.log('🚀 Buscando colaboradores com:', value);
       try {
         const { data, error } = await supabase
           .from('employees')
@@ -120,7 +125,11 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
           .order('name')
           .limit(8);
         
+        console.log('📦 Resultado:', data);
+        console.log('❌ Erro:', error);
+        
         if (!error && data) {
+          console.log('✨ Sugestões encontradas:', data.length);
           setSuggestions(data as Employee[]);
           setShowSuggestions(true);
         }
@@ -128,6 +137,7 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
         console.error('Erro ao buscar colaboradores:', err);
       }
     } else {
+      console.log('⏸️ Não busca (length ou config)');
       setSuggestions([]);
       setShowSuggestions(false);
     }
