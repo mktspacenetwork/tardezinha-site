@@ -9,15 +9,36 @@ export interface FAQItem {
 }
 
 export interface Employee {
+  id?: number;
   name: string;
   role: string;
+  department: string;
+  created_at?: string;
+}
+
+export interface Companion {
+  id?: number;
+  confirmation_id?: number;
+  name: string;
+  age: number;
+  document: string; // RG ou CPF
+  type: 'adult' | 'child';
+  created_at?: string;
 }
 
 export interface Confirmation {
-  id?: number; // Optional for new inserts, required for reads
-  name: string;
-  phone: string;
-  guests: number;
-  transport: boolean;
-  created_at?: string; // Supabase generates this automatically
+  id?: number;
+  employee_name: string;
+  employee_rg: string;
+  department: string;
+  has_companions: boolean;
+  wants_transport: boolean;
+  companions?: Companion[];
+  total_adults: number;
+  total_children: number;
+  total_daily_passes: number;
+  total_transport: number;
+  embarked?: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
