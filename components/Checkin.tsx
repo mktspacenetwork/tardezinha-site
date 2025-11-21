@@ -75,6 +75,9 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  
+  // Redirect countdown
+  const [redirectCountdown, setRedirectCountdown] = useState<number | null>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(([entry]) => {
@@ -110,6 +113,23 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
       fetchSeats();
     }
   }, []);
+
+  // Redirect countdown effect
+  useEffect(() => {
+    if (redirectCountdown === null) return;
+    
+    if (redirectCountdown === 0) {
+      window.open('https://useingresso.com/evento/691b30d3dc465aca63b2bbef', '_blank');
+      setRedirectCountdown(null);
+      return;
+    }
+    
+    const timer = setTimeout(() => {
+      setRedirectCountdown(redirectCountdown - 1);
+    }, 1000);
+    
+    return () => clearTimeout(timer);
+  }, [redirectCountdown]);
 
   useEffect(() => {
     if (isSupabaseConfigured()) {
@@ -258,11 +278,16 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
     setHasCompanions(existingConfirmation.has_companions);
     setWantsTransport(existingConfirmation.wants_transport);
 
+    // CRITICAL: Always reset companions arrays to prevent stale data corruption
     if (existingConfirmation.companions && existingConfirmation.companions.length > 0) {
       const adultsData = existingConfirmation.companions.filter((c: Companion) => c.type === 'adult');
       const childrenData = existingConfirmation.companions.filter((c: Companion) => c.type === 'child');
       setAdults(adultsData);
       setChildren(childrenData);
+    } else {
+      // Reset to empty arrays if no companions exist in database
+      setAdults([]);
+      setChildren([]);
     }
   };
 
@@ -375,6 +400,15 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
     let confirmationId: number | null = null;
 
     try {
+      // CRITICAL: Check for duplicate confirmation before inserting
+      if (!isEditMode && selectedEmployee.id) {
+        const isDuplicate = await checkExistingConfirmation(selectedEmployee.id);
+        if (isDuplicate) {
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
       const confirmation: Partial<Confirmation> = {
         employee_id: selectedEmployee.id,
         employee_name: selectedEmployee.name,
@@ -466,9 +500,25 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
       }
 
       setStep('success');
+      
+      // Start redirect countdown if user has purchases
+      if (totalDailyPasses > 0 || totalTransport > 0) {
+        setRedirectCountdown(5);
+      }
+      
       onConfirm();
     } catch (err: any) {
       console.error('Erro ao salvar confirmação:', err);
+      
+      // Check if error is duplicate key violation (Postgres error code 23505)
+      if (err.code === '23505' && err.message.includes('employee_id')) {
+        setIsSubmitting(false);
+        if (selectedEmployee?.id) {
+          await checkExistingConfirmation(selectedEmployee.id);
+        }
+        return;
+      }
+      
       setError(err.message || 'Erro ao salvar confirmação. Por favor, tente novamente.');
     } finally {
       setIsSubmitting(false);
@@ -525,11 +575,24 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
                     </div>
                   )}
                 </div>
+                
+                {redirectCountdown !== null && (
+                  <div className="bg-yellow-400 bg-opacity-90 text-gray-900 rounded-lg p-4 mb-6 font-semibold">
+                    <p className="text-lg">
+                      🔄 Redirecionando para a página de compra em {redirectCountdown} segundo{redirectCountdown !== 1 ? 's' : ''}...
+                    </p>
+                    <p className="text-sm mt-2 opacity-80">
+                      Você será direcionado automaticamente para adquirir seus ingressos
+                    </p>
+                  </div>
+                )}
+                
                 <a
                   href="https://useingresso.com/evento/691b30d3dc465aca63b2bbef"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-block bg-solar-purple hover:bg-opacity-90 text-white font-bold py-4 px-8 rounded-full text-lg transition-all transform hover:scale-105 shadow-lg"
+                  onClick={() => setRedirectCountdown(null)}
                 >
                   Seguir para Compra →
                 </a>

@@ -6,6 +6,20 @@ This is a React + TypeScript event management application for "Tardezinha da Spa
 **Current State:** The application is fully configured and running in the Replit environment. It's ready for development and deployment.
 
 ## Recent Changes (November 21, 2025)
+
+### Anti-Duplication System Implementation
+- **Success Screen Redirect Notice**: Added countdown timer (5 seconds) that notifies user they will be redirected to purchase page when they select dailies/transport
+- **Single Confirmation Enforcement**: 
+  - Created unique database constraint on `confirmations.employee_id` to prevent duplicate confirmations
+  - Added pre-submit validation that checks for existing confirmations before allowing new ones
+  - Database will reject duplicate attempts with Postgres error 23505
+- **Edit Mode with Password Validation**: 
+  - When employee tries to confirm again, system shows modal asking if they want to edit
+  - Requires entering first 5 digits of RG/CPF from original confirmation before allowing edits
+  - Complete flow: duplicate detection → edit request → password validation → edit mode → update
+- **Redirect Behavior**: Users with purchases are auto-redirected to purchase page after 5 seconds (can click button to redirect immediately)
+
+### Previous Changes
 - **Event Date Consistency Fix**: Synchronized both countdown timers (Countdown.tsx and Checkin.tsx) to use the same event date: December 21, 2025 at 12:00 PM
 - **Footer Date Correction**: Fixed day of week from "Sábado" to "Domingo" (December 21, 2025 is a Sunday, not Saturday)
 - **Database Schema Complete Fix**: 
