@@ -491,7 +491,8 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
       }
 
       // Sucesso!
-      if (typeof confetti !== 'undefined') {
+      // Show confetti ONLY when NO companions and NO transport (simple confirmation)
+      if (typeof confetti !== 'undefined' && totalDailyPasses === 0 && totalTransport === 0) {
         confetti({
           particleCount: 150,
           spread: 70,
@@ -501,9 +502,9 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
 
       setStep('success');
       
-      // Start redirect countdown if user has purchases
+      // Start redirect countdown if user has purchases (6 seconds)
       if (totalDailyPasses > 0 || totalTransport > 0) {
-        setRedirectCountdown(5);
+        setRedirectCountdown(6);
       }
       
       onConfirm();
@@ -558,7 +559,8 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
 
             {(totalDailyPasses > 0 || totalTransport > 0) && (
               <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-8 mb-8">
-                <h3 className="text-2xl font-bold mb-4">Para aproveitar o evento, adquira:</h3>
+                <h3 className="text-2xl font-bold mb-6">Você está sendo redirecionado...</h3>
+                <p className="text-lg mb-6">Para aproveitar o evento, você precisará adquirir:</p>
                 <div className="space-y-3 text-lg mb-6">
                   {totalDailyPasses > 0 && (
                     <div className="flex items-center justify-center gap-3">
@@ -579,10 +581,7 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
                 {redirectCountdown !== null && (
                   <div className="bg-yellow-400 bg-opacity-90 text-gray-900 rounded-lg p-4 mb-6 font-semibold">
                     <p className="text-lg">
-                      🔄 Redirecionando para a página de compra em {redirectCountdown} segundo{redirectCountdown !== 1 ? 's' : ''}...
-                    </p>
-                    <p className="text-sm mt-2 opacity-80">
-                      Você será direcionado automaticamente para adquirir seus ingressos
+                      🔄 Redirecionando em {redirectCountdown} segundo{redirectCountdown !== 1 ? 's' : ''}...
                     </p>
                   </div>
                 )}
@@ -594,15 +593,16 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
                   className="inline-block bg-solar-purple hover:bg-opacity-90 text-white font-bold py-4 px-8 rounded-full text-lg transition-all transform hover:scale-105 shadow-lg"
                   onClick={() => setRedirectCountdown(null)}
                 >
-                  Seguir para Compra →
+                  Ir agora
                 </a>
               </div>
             )}
 
-            {totalTransport === 0 && (
+            {totalDailyPasses === 0 && totalTransport === 0 && (
               <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-6 mb-8">
+                <p className="text-xl font-bold mb-2">Parabéns! 🎉</p>
                 <p className="text-lg">
-                  ✓ Você optou por não utilizar o transporte. Nos vemos lá!
+                  Sua presença está confirmada. Nos vemos no evento!
                 </p>
               </div>
             )}

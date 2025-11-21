@@ -1,0 +1,77 @@
+Instruções claras para implementar no projeto
+
+Siga exatamente as regras abaixo no fluxo do formulário + Supabase:
+
+✅ 1. Confirmação SEM acompanhante e SEM transporte
+
+Quando o colaborador enviar o formulário e selecionar “Não tenho acompanhante” e “Não preciso de transporte”:
+
+Mostrar um popup com efeito de confetes.
+
+Mostrar mensagem de Parabéns pela confirmação.
+
+Não redirecionar para outra página.
+
+✅ 2. Confirmação COM acompanhante
+
+Quando o colaborador adicionar acompanhante, então após clicar em confirmar:
+
+Exibir um popup com animação, dizendo:
+
+“Você está sendo redirecionado…”
+
+Quantas diárias e quantos transfers de ônibus ele precisa comprar.
+
+Após 6 segundos, redirecionar automaticamente para:
+👉 https://useingresso.com/evento/691b30d3dc465aca63b2bbef
+
+Dentro do popup também deve existir um botão ‘Ir agora’ que também faz esse redirecionamento imediatamente.
+
+✅ 3. Cada colaborador só pode confirmar UMA vez
+
+No envio das informações:
+
+Antes de salvar no banco, fazer uma consulta no Supabase verificando se o nome (ou ID/documento, dependendo da tabela) já existe.
+
+Se já existir, bloquear novo envio e não permitir cadastrar de novo.
+
+Exibir mensagem:
+“Você já realizou sua confirmação anteriormente.”
+
+✅ 4. Caso tente confirmar novamente
+
+Se o colaborador já confirmou antes:
+
+Exibir mensagem explicando que ele já confirmou.
+
+Oferecer opção “Editar minha confirmação”.
+
+✅ 5. Para editar a confirmação
+
+Para autorizar a edição:
+
+Solicitar uma senha.
+
+A senha deve ser: os 5 primeiros dígitos do documento cadastrado na primeira confirmação.
+
+Somente ao inserir corretamente essa senha, o sistema deve:
+
+Liberar o formulário novamente.
+
+Permitir editar todos os dados.
+
+Ao submeter, deve atualizar o registro existente no Supabase (não criar novo).
+
+🔄 Resumo técnico que você deve implementar
+
+Consulta no banco antes do insert.
+
+Insert somente se o colaborador ainda não existir.
+
+Update quando o colaborador estiver autenticado com a senha (5 primeiros dígitos).
+
+Lógica condicional para:
+
+popup de parabéns + confetes (sem acompanhante)
+
+popup + animação + redirecionamento (com acompanhante)
