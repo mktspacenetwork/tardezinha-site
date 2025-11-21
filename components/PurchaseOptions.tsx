@@ -16,7 +16,7 @@ const PurchaseOptions: React.FC<PurchaseOptionsProps> = ({ showIntro }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const TOTAL_BUS_SEATS = 90;
-  const [remainingSeats, setRemainingSeats] = useState(12);
+  const [remainingSeats, setRemainingSeats] = useState(90);
 
   useEffect(() => {
     const observer = new IntersectionObserver(([entry]) => {
