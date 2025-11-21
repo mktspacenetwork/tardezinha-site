@@ -43,3 +43,37 @@ export interface Confirmation {
   created_at?: string;
   updated_at?: string;
 }
+
+// Wizard types
+export interface WizardData {
+  employee: Employee | null;
+  employeeRG: string;
+  attending: boolean | null;
+  companions: Companion[];
+  wantsTransport: boolean | null;
+  transportSeatsNeeded: number;
+  childrenOnLap: number[]; // IDs of children under 5 who will be on lap (free)
+  costs: {
+    dailyPasses: number;
+    transport: number;
+    total: number;
+    breakdown: {
+      adultPasses: number;
+      childPasses: number;
+      halfPricePasses: number;
+      transportSeats: number;
+    };
+  };
+}
+
+export interface CostCalculation {
+  dailyPasses: number;
+  transport: number;
+  total: number;
+  breakdown: {
+    adultPasses: number; // 13+ years
+    childPasses: number; // 0-12 years (half price)
+    halfPricePasses: number; // Count of half-price tickets
+    transportSeats: number; // Paid transport seats
+  };
+}

@@ -1,0 +1,34 @@
+Com base no código fornecido, este é um sistema de RSVP (Répondez S'il Vous Plaît) desenvolvido em React que funciona como um "Wizard" (formulário passo-a-passo). O objetivo é confirmar a presença de colaboradores, gerenciar convidados extras e logística de transporte, culminando em uma confirmação gerada por Inteligência Artificial.
+Aqui está a descrição detalhada da lógica de negócio e fluxo de dados:
+1. Estrutura de Estado (App.tsx)
+O "cérebro" da aplicação mantém o estado global do fluxo:
+currentStep: Controla qual tela é exibida (Login, Presença, Convidados, Transporte, Resumo, Sucesso).
+rsvpData: Um objeto acumulativo que guarda:
+Quem é o funcionário.
+Se ele vai ou não.
+Lista de acompanhantes.
+Escolha do transporte.
+2. Fluxo Passo-a-Passo
+Passo 1: Identificação (EmployeeLogin)
+Lógica: O sistema carrega uma lista fixa de funcionários (MOCK_EMPLOYEES).
+Interação: O usuário digita o nome ou email. O sistema filtra a lista em tempo real. Ao clicar, o estado rsvpData.employee é preenchido e avança o passo.
+Passo 2: Intenção de Presença (AttendanceStep)
+Lógica Binária:
+Sim: Define attending: true e avança para a seleção de acompanhantes.
+Não: Define attending: false, gera uma mensagem de despedida simples e pula direto para o passo de Sucesso, encerrando o fluxo.
+Passo 3: Acompanhantes e Custo (GuestsStep)
+Regra de Negócio: O funcionário não paga ingresso, mas acompanhantes sim.
+Cálculo: O sistema permite adicionar N convidados. O custo parcial é calculado como: Quantidade de Convidados * R$ 150,00.
+Passo 4: Transporte (TransportStep)
+Regra de Negócio: O transporte é cobrado por assento ocupado.
+Lógica de Seleção: Se o usuário optar pelo transporte, o custo é aplicado a todos do grupo (Funcionário + Convidados).
+Cálculo: (1 Funcionário + N Convidados) * R$ 35,00.
+Passo 5: Resumo e Pagamento (SummaryStep)
+Agregação: Soma todos os custos (Ingressos de convidados + Total de transporte).
+Exibição: Mostra os detalhes do evento e o detalhamento financeiro antes da confirmação final.
+3. Integração com IA (O Diferencial)
+No momento da confirmação final (handleConfirm no SummaryStep), o sistema aciona o geminiService.ts:
+Coleta de Dados: Pega o nome do funcionário, nomes dos convidados e status do transporte.
+Prompt Engineering: Monta um texto instruindo a IA: "O funcionário X confirmou presença com Y convidados e [sim/não] contratou transporte. Escreva uma mensagem elegante e entusiasmada..."
+Geração: Utiliza o modelo gemini-2.5-flash via SDK do Google GenAI para criar um texto único e personalizado.
+Resultado: Essa mensagem gerada pela IA é exibida na tela final de Sucesso, tornando a experiência mais humana e divertida do que uma mensagem estática padrão.

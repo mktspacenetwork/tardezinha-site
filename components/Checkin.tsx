@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Employee, Confirmation, Companion } from '../types';
 import { supabase, isSupabaseConfigured } from '../supabaseClient';
-
-declare var confetti: any;
+import ConfirmationWizard from './ConfirmationWizard';
 
 const MOOD_EMOJIS = ['🎉', '😎', '🤩', '🥳', '🚀', '🔥', '🕺', '💃', '🎶', '🌴', '☀️', '⭐', '✨', '🎊', '🌟'];
 const GRADIENT_COLORS = [
@@ -34,50 +32,10 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [remainingDays, setRemainingDays] = useState(0);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [step, setStep] = useState<'form' | 'success'>('form');
-
-  // Form state
-  const [name, setName] = useState('');
-  const [employeeRG, setEmployeeRG] = useState('');
-  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
-  const [suggestions, setSuggestions] = useState<Employee[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  
-  const [hasCompanions, setHasCompanions] = useState<boolean | null>(null);
-  const [wantsTransport, setWantsTransport] = useState<boolean | null>(null);
-  const [agreedToRules, setAgreedToRules] = useState(false);
-  
-  // Companions state
-  const [adults, setAdults] = useState<Companion[]>([]);
-  const [children, setChildren] = useState<Companion[]>([]);
-  
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
-  
-  // Calculation results
-  const [totalDailyPasses, setTotalDailyPasses] = useState(0);
-  const [totalTransport, setTotalTransport] = useState(0);
-
-  const TOTAL_BUS_SEATS = 90;
-  const [remainingSeats, setRemainingSeats] = useState(90);
-  
-  // Confirmed attendees from database
+  const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [confirmedAttendees, setConfirmedAttendees] = useState<ConfirmedAttendee[]>([]);
-
-  // Edit mode states
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [editingConfirmationId, setEditingConfirmationId] = useState<number | null>(null);
-  const [existingConfirmation, setExistingConfirmation] = useState<Confirmation | null>(null);
-  
-  // Modal states for duplicate confirmation
-  const [showDuplicateModal, setShowDuplicateModal] = useState(false);
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [passwordInput, setPasswordInput] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-  
-  // Redirect countdown
-  const [redirectCountdown, setRedirectCountdown] = useState<number | null>(null);
+  const [remainingSeats, setRemainingSeats] = useState(90);
+  const TOTAL_BUS_SEATS = 90;
 
   useEffect(() => {
     const observer = new IntersectionObserver(([entry]) => {
@@ -114,1054 +72,173 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
     }
   }, []);
 
-  // Redirect countdown effect
-  useEffect(() => {
-    if (redirectCountdown === null) return;
-    
-    if (redirectCountdown === 0) {
-      window.open('https://useingresso.com/evento/691b30d3dc465aca63b2bbef', '_blank');
-      setRedirectCountdown(null);
-      return;
-    }
-    
-    const timer = setTimeout(() => {
-      setRedirectCountdown(redirectCountdown - 1);
-    }, 1000);
-    
-    return () => clearTimeout(timer);
-  }, [redirectCountdown]);
-
   useEffect(() => {
     if (isSupabaseConfigured()) {
-      const fetchConfirmedAttendees = async () => {
-        const { data, error } = await supabase
-          .from('confirmations')
-          .select('employee_name')
-          .order('created_at', { ascending: false });
-        
-        if (!error && data) {
-          const attendees: ConfirmedAttendee[] = data.map((conf) => {
-            const nameParts = conf.employee_name.trim().split(' ');
-            const firstName = nameParts[0] || '';
-            const lastName = nameParts[nameParts.length - 1] || '';
-            const initials = (firstName[0] || '') + (nameParts.length > 1 ? lastName[0] || '' : '');
-            
-            const randomMood = MOOD_EMOJIS[Math.floor(Math.random() * MOOD_EMOJIS.length)];
-            const randomColor = GRADIENT_COLORS[Math.floor(Math.random() * GRADIENT_COLORS.length)];
-            
-            return {
-              initials: initials.toUpperCase(),
-              fullName: conf.employee_name,
-              mood: randomMood,
-              color: randomColor,
-            };
-          });
-          
-          setConfirmedAttendees(attendees);
-        }
-      };
-      
       fetchConfirmedAttendees();
     }
   }, []);
 
-  // Recalcular diárias e transporte quando acompanhantes mudarem
-  useEffect(() => {
-    const totalAdults = adults.length;
-    const totalChildren = children.length;
+  const fetchConfirmedAttendees = async () => {
+    const { data, error } = await supabase
+      .from('confirmations')
+      .select('employee_name')
+      .order('created_at', { ascending: false });
     
-    // Colaborador não paga diária, apenas acompanhantes
-    const dailyPasses = totalAdults + totalChildren;
-    setTotalDailyPasses(dailyPasses);
-    
-    // Transporte: colaborador + acompanhantes (se quiser transporte)
-    if (wantsTransport) {
-      setTotalTransport(1 + totalAdults + totalChildren);
-    } else {
-      setTotalTransport(0);
-    }
-  }, [adults, children, wantsTransport]);
-
-  const handleNameChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setName(value);
-    setSelectedEmployee(null);
-    
-    if (value.length > 1 && isSupabaseConfigured()) {
-      try {
-        const { data, error } = await supabase
-          .from('employees')
-          .select('*')
-          .ilike('name', `%${value}%`)
-          .order('name')
-          .limit(8);
+    if (!error && data) {
+      const attendees: ConfirmedAttendee[] = data.map((conf) => {
+        const nameParts = conf.employee_name.trim().split(' ');
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts[nameParts.length - 1] || '';
+        const initials = (firstName[0] || '') + (nameParts.length > 1 ? lastName[0] || '' : '');
         
-        if (!error && data) {
-          setSuggestions(data as Employee[]);
-          setShowSuggestions(true);
-        }
-      } catch (err) {
-        console.error('Erro ao buscar colaboradores:', err);
-      }
-    } else {
-      setSuggestions([]);
-      setShowSuggestions(false);
-    }
-  };
-
-  const checkExistingConfirmation = async (employeeId: number) => {
-    if (!isSupabaseConfigured()) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('confirmations')
-        .select('*, companions(*)')
-        .eq('employee_id', employeeId)
-        .single();
-
-      if (!error && data) {
-        setExistingConfirmation(data as Confirmation);
-        setShowDuplicateModal(true);
-        return true;
-      }
-      return false;
-    } catch (err) {
-      console.error('Erro ao verificar confirmação existente:', err);
-      return false;
-    }
-  };
-
-  const handleSuggestionClick = async (employee: Employee) => {
-    setName(employee.name);
-    setSelectedEmployee(employee);
-    setSuggestions([]);
-    setShowSuggestions(false);
-
-    if (employee.id) {
-      // Check for duplicate - modal will overlay on top of main modal
-      await checkExistingConfirmation(employee.id);
-    }
-  };
-
-  const handleRulesClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsModalOpen(false);
-    onOpenRules();
-  };
-
-  const handleEditRequest = () => {
-    setShowDuplicateModal(false);
-    setShowPasswordModal(true);
-    setPasswordInput('');
-    setPasswordError('');
-  };
-
-  const handlePasswordValidation = async () => {
-    if (!existingConfirmation) return;
-
-    const existingRGFirst5 = existingConfirmation.employee_rg.replace(/\D/g, '').substring(0, 5);
-    const inputFirst5 = passwordInput.replace(/\D/g, '').substring(0, 5);
-
-    if (existingRGFirst5 === inputFirst5) {
-      setShowPasswordModal(false);
-      await loadExistingConfirmationData();
-      // Reopen main modal in edit mode
-      setIsModalOpen(true);
-    } else {
-      setPasswordError('Documento incorreto. Verifique os 5 primeiros caracteres.');
-    }
-  };
-
-  const loadExistingConfirmationData = async () => {
-    if (!existingConfirmation || !isSupabaseConfigured()) return;
-
-    setIsEditMode(true);
-    setEditingConfirmationId(existingConfirmation.id || null);
-    setEmployeeRG(existingConfirmation.employee_rg);
-    setHasCompanions(existingConfirmation.has_companions);
-    setWantsTransport(existingConfirmation.wants_transport);
-
-    // CRITICAL: Always reset companions arrays to prevent stale data corruption
-    if (existingConfirmation.companions && existingConfirmation.companions.length > 0) {
-      const adultsData = existingConfirmation.companions.filter((c: Companion) => c.type === 'adult');
-      const childrenData = existingConfirmation.companions.filter((c: Companion) => c.type === 'child');
-      setAdults(adultsData);
-      setChildren(childrenData);
-    } else {
-      // Reset to empty arrays if no companions exist in database
-      setAdults([]);
-      setChildren([]);
-    }
-  };
-
-  const handleCancelDuplicate = () => {
-    setShowDuplicateModal(false);
-    setExistingConfirmation(null);
-    setSelectedEmployee(null);
-    setName('');
-    // Keep main modal open so user can select different employee
-  };
-
-  const handleCancelPassword = () => {
-    setShowPasswordModal(false);
-    setPasswordInput('');
-    setPasswordError('');
-    setExistingConfirmation(null);
-    setSelectedEmployee(null);
-    setName('');
-    // Keep main modal open so user can select different employee
-  };
-
-  const addAdult = () => {
-    if (adults.length < 2) {
-      setAdults([...adults, { name: '', age: 18, document: '', type: 'adult' }]);
-    }
-  };
-
-  const addChild = () => {
-    if (children.length < 5) {
-      setChildren([...children, { name: '', age: 0, document: '', type: 'child' }]);
-    }
-  };
-
-  const removeAdult = (index: number) => {
-    setAdults(adults.filter((_, i) => i !== index));
-  };
-
-  const removeChild = (index: number) => {
-    setChildren(children.filter((_, i) => i !== index));
-  };
-
-  const updateAdult = (index: number, field: keyof Companion, value: any) => {
-    const updated = [...adults];
-    updated[index] = { ...updated[index], [field]: value };
-    setAdults(updated);
-  };
-
-  const updateChild = (index: number, field: keyof Companion, value: any) => {
-    const updated = [...children];
-    updated[index] = { ...updated[index], [field]: value };
-    setChildren(updated);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    // Validações
-    if (!selectedEmployee) {
-      setError('Por favor, selecione um colaborador da lista.');
-      return;
-    }
-
-    if (!employeeRG.trim()) {
-      setError('Por favor, informe o RG do colaborador.');
-      return;
-    }
-
-    if (hasCompanions === null) {
-      setError('Por favor, informe se levará acompanhantes.');
-      return;
-    }
-
-    if (hasCompanions && adults.length === 0 && children.length === 0) {
-      setError('Por favor, adicione pelo menos um acompanhante ou selecione "Não" para acompanhantes.');
-      return;
-    }
-
-    // Validar dados dos acompanhantes
-    if (hasCompanions) {
-      for (const adult of adults) {
-        if (!adult.name.trim() || adult.age < 18 || !adult.document.trim()) {
-          setError('Por favor, preencha todos os dados dos acompanhantes adultos (nome, idade ≥ 18, RG/CPF).');
-          return;
-        }
-      }
-      for (const child of children) {
-        if (!child.name.trim() || child.age < 0 || child.age >= 18 || !child.document.trim()) {
-          setError('Por favor, preencha todos os dados das crianças (nome, idade < 18, RG/CPF).');
-          return;
-        }
-      }
-    }
-
-    if (wantsTransport === null) {
-      setError('Por favor, informe se deseja transporte.');
-      return;
-    }
-
-    if (!agreedToRules) {
-      setError('Por favor, aceite os termos e condições.');
-      return;
-    }
-
-    if (!isSupabaseConfigured()) {
-      setError('ERRO: O banco de dados não está conectado. Avise o administrador.');
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    let confirmationId: number | null = null;
-
-    try {
-      // CRITICAL: Check for duplicate confirmation before inserting
-      if (!isEditMode && selectedEmployee.id) {
-        const isDuplicate = await checkExistingConfirmation(selectedEmployee.id);
-        if (isDuplicate) {
-          setIsSubmitting(false);
-          return;
-        }
-      }
-
-      const confirmation: Partial<Confirmation> = {
-        employee_id: selectedEmployee.id,
-        employee_name: selectedEmployee.name,
-        employee_rg: employeeRG,
-        department: selectedEmployee.department,
-        has_companions: hasCompanions,
-        wants_transport: wantsTransport || false,
-        total_adults: adults.length,
-        total_children: children.length,
-        total_daily_passes: totalDailyPasses,
-        total_transport: totalTransport,
-      };
-
-      let confirmationData;
-      
-      if (isEditMode && editingConfirmationId) {
-        const { data, error: updateError } = await supabase
-          .from('confirmations')
-          .update(confirmation)
-          .eq('id', editingConfirmationId)
-          .select()
-          .single();
-
-        if (updateError) {
-          throw updateError;
-        }
+        const randomMood = MOOD_EMOJIS[Math.floor(Math.random() * MOOD_EMOJIS.length)];
+        const randomColor = GRADIENT_COLORS[Math.floor(Math.random() * GRADIENT_COLORS.length)];
         
-        confirmationData = data;
-        confirmationId = editingConfirmationId;
-
-        await supabase
-          .from('companions')
-          .delete()
-          .eq('confirmation_id', editingConfirmationId);
-      } else {
-        const { data, error: insertError } = await supabase
-          .from('confirmations')
-          .insert(confirmation)
-          .select()
-          .single();
-
-        if (insertError) {
-          throw insertError;
-        }
-
-        confirmationData = data;
-        confirmationId = confirmationData.id;
-      }
-
-      // Inserir acompanhantes
-      if (hasCompanions && confirmationData) {
-        const allCompanions = [...adults, ...children].map(comp => ({
-          confirmation_id: confirmationData.id,
-          name: comp.name,
-          age: comp.age,
-          document: comp.document,
-          type: comp.type,
-        }));
-
-        if (allCompanions.length > 0) {
-          const { error: companionsError } = await supabase
-            .from('companions')
-            .insert(allCompanions);
-
-          if (companionsError) {
-            // ROLLBACK: Excluir confirmação se inserção de acompanhantes falhou
-            const { error: deleteError } = await supabase
-              .from('confirmations')
-              .delete()
-              .eq('id', confirmationData.id);
-            
-            if (deleteError) {
-              console.error('ERRO CRÍTICO: Falha no rollback!', deleteError);
-              throw new Error('Erro crítico: Dados podem estar inconsistentes. Contate o administrador.');
-            }
-            
-            throw new Error('Erro ao salvar acompanhantes. A confirmação foi revertida.');
-          }
-        }
-      }
-
-      // Sucesso!
-      // Show confetti ONLY when NO companions and NO transport (simple confirmation)
-      if (typeof confetti !== 'undefined' && totalDailyPasses === 0 && totalTransport === 0) {
-        confetti({
-          particleCount: 150,
-          spread: 70,
-          origin: { y: 0.6 }
-        });
-      }
-
-      setStep('success');
+        return {
+          initials: initials.toUpperCase(),
+          fullName: conf.employee_name,
+          mood: randomMood,
+          color: randomColor,
+        };
+      });
       
-      // Start redirect countdown if user has purchases (6 seconds)
-      if (totalDailyPasses > 0 || totalTransport > 0) {
-        setRedirectCountdown(6);
-      }
-      
-      onConfirm();
-    } catch (err: any) {
-      console.error('Erro ao salvar confirmação:', err);
-      
-      // Check if error is duplicate key violation (Postgres error code 23505)
-      if (err.code === '23505' && err.message.includes('employee_id')) {
-        setIsSubmitting(false);
-        if (selectedEmployee?.id) {
-          await checkExistingConfirmation(selectedEmployee.id);
-        }
-        return;
-      }
-      
-      setError(err.message || 'Erro ao salvar confirmação. Por favor, tente novamente.');
-    } finally {
-      setIsSubmitting(false);
+      setConfirmedAttendees(attendees);
     }
   };
 
-  const resetForm = () => {
-    setName('');
-    setEmployeeRG('');
-    setSelectedEmployee(null);
-    setHasCompanions(null);
-    setWantsTransport(null);
-    setAgreedToRules(false);
-    setAdults([]);
-    setChildren([]);
-    setError('');
-    setStep('form');
-    setIsEditMode(false);
-    setEditingConfirmationId(null);
-    setExistingConfirmation(null);
-    setShowDuplicateModal(false);
-    setShowPasswordModal(false);
-    setPasswordInput('');
-    setPasswordError('');
+  const handleOpenWizard = () => {
+    setIsWizardOpen(true);
   };
 
-  if (step === 'success') {
-    return (
-      <section id="checkin" ref={sectionRef} className="py-20 px-4 bg-gradient-solar text-white">
-        <div className="max-w-3xl mx-auto text-center">
-          <div className="animate-fadeInUp">
-            <div className="text-8xl mb-6">🎉</div>
-            <h2 className="text-4xl md:text-5xl font-black mb-6">Presença Confirmada!</h2>
-            <p className="text-xl mb-8">
-              Sua confirmação foi registrada com sucesso!
-            </p>
+  const handleCloseWizard = () => {
+    setIsWizardOpen(false);
+  };
 
-            {(totalDailyPasses > 0 || totalTransport > 0) && (
-              <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-8 mb-8">
-                <h3 className="text-2xl font-bold mb-6">Você está sendo redirecionado...</h3>
-                <p className="text-lg mb-6">Para aproveitar o evento, você precisará adquirir:</p>
-                <div className="space-y-3 text-lg mb-6">
-                  {totalDailyPasses > 0 && (
-                    <div className="flex items-center justify-center gap-3">
-                      <span className="text-3xl">🏖️</span>
-                      <span className="font-semibold">{totalDailyPasses}</span>
-                      <span>Diária{totalDailyPasses > 1 ? 's' : ''} de Acompanhante</span>
-                    </div>
-                  )}
-                  {totalTransport > 0 && (
-                    <div className="flex items-center justify-center gap-3">
-                      <span className="text-3xl">🚌</span>
-                      <span className="font-semibold">{totalTransport}</span>
-                      <span>Transfer{totalTransport > 1 ? 's' : ''} de Ônibus</span>
-                    </div>
-                  )}
-                </div>
-                
-                {redirectCountdown !== null && (
-                  <div className="bg-yellow-400 bg-opacity-90 text-gray-900 rounded-lg p-4 mb-6 font-semibold">
-                    <p className="text-lg">
-                      🔄 Redirecionando em {redirectCountdown} segundo{redirectCountdown !== 1 ? 's' : ''}...
-                    </p>
-                  </div>
-                )}
-                
-                <a
-                  href="https://useingresso.com/evento/691b30d3dc465aca63b2bbef"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block bg-solar-purple hover:bg-opacity-90 text-white font-bold py-4 px-8 rounded-full text-lg transition-all transform hover:scale-105 shadow-lg"
-                  onClick={() => setRedirectCountdown(null)}
-                >
-                  Ir agora
-                </a>
-              </div>
-            )}
-
-            {totalDailyPasses === 0 && totalTransport === 0 && (
-              <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-6 mb-8">
-                <p className="text-xl font-bold mb-2">Parabéns! 🎉</p>
-                <p className="text-lg">
-                  Sua presença está confirmada. Nos vemos no evento!
-                </p>
-              </div>
-            )}
-
-            <button
-              onClick={resetForm}
-              className="bg-white text-solar-purple font-bold py-3 px-6 rounded-full hover:bg-opacity-90 transition-all"
-            >
-              Fazer Nova Confirmação
-            </button>
-          </div>
-        </div>
-      </section>
-    );
-  }
+  const handleWizardSuccess = () => {
+    fetchConfirmedAttendees(); // Refresh attendees list
+    onConfirm(); // Call parent callback
+  };
 
   return (
-    <section id="checkin" ref={sectionRef} className="py-12 md:py-20 px-4 bg-gray-50">
-      <div className="max-w-4xl mx-auto">
-        {/* Cabeçalho da Seção */}
-        <div className={`text-center mb-8 md:mb-12 relative ${isVisible ? 'animate-fadeInUp' : 'opacity-0'}`}>
-          {/* Badge COLABORADOR 100% Grátis */}
-          <div className="absolute -top-4 md:-top-6 right-0 md:right-12 bg-gradient-to-br from-green-400 to-green-600 text-white rounded-full px-4 md:px-6 py-2 md:py-3 font-black text-xs md:text-sm shadow-lg transform rotate-12 animate-pulse z-10">
-            <div className="text-center leading-tight">
-              <div>COLABORADOR</div>
-              <div>100% GRÁTIS</div>
-            </div>
+    <section
+      id="checkin"
+      ref={sectionRef}
+      className={`min-h-screen bg-gradient-to-b from-white via-orange-50/30 to-pink-50/30 py-16 md:py-24 px-4 transition-opacity duration-1000 ${
+        isVisible ? 'opacity-100' : 'opacity-0'
+      }`}
+    >
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <div className="inline-block mb-4">
+            <span className="bg-gradient-to-r from-orange-500 to-pink-500 text-white px-6 py-2 rounded-full text-sm font-bold uppercase tracking-wider shadow-lg">
+              100% GRÁTIS
+            </span>
           </div>
-
-          {/* Título com Gradiente */}
-          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-4 md:mb-6 bg-gradient-to-r from-orange-400 via-pink-500 to-pink-600 bg-clip-text text-transparent leading-tight px-2 tracking-tight">
-            CONFIRME SUA PRESENÇA
+          <h2 className="text-4xl md:text-6xl font-black mb-6 leading-tight">
+            <span className="bg-gradient-to-r from-orange-600 via-pink-500 to-orange-500 bg-clip-text text-transparent">
+              Confirme Sua Presença
+            </span>
           </h2>
-
-          {/* Subtítulo */}
-          <p className="text-gray-700 text-lg md:text-xl font-medium mb-6 md:mb-8 px-4">
-            Garanta a sua entrada e não fique de fora.
+          <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+            Não perca a melhor festa do ano! Sua entrada é <strong>100% gratuita</strong>.
+            Você só paga se levar acompanhantes ou quiser transporte.
           </p>
+        </div>
 
-          {/* Botão Quero Participar */}
-          <div className="flex justify-center mb-6">
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-black text-xl md:text-2xl py-4 md:py-5 px-8 md:px-12 rounded-2xl shadow-2xl transition-all transform hover:scale-105 uppercase"
-            >
-              QUERO PARTICIPAR!
-            </button>
-          </div>
-
-          {/* Countdown */}
-          {remainingDays > 0 && (
-            <p className="text-gray-800 text-base md:text-lg font-bold mb-4">
-              Você tem apenas <span className="text-2xl md:text-3xl text-pink-600">{remainingDays}</span> dias para confirmar sua presença.
+        {/* Countdown Timer */}
+        <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 mb-12 border-4 border-orange-200">
+          <div className="text-center">
+            <h3 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">
+              Faltam apenas
+            </h3>
+            <div className="inline-flex items-center justify-center w-32 h-32 bg-gradient-to-r from-orange-500 to-pink-500 rounded-full mb-6">
+              <span className="text-6xl font-black text-white">{remainingDays}</span>
+            </div>
+            <p className="text-xl md:text-2xl font-semibold text-gray-700">
+              {remainingDays === 1 ? 'dia' : 'dias'} para a Tardezinha da Space!
             </p>
-          )}
-
-          {/* Cortesia */}
-          <p className="text-gray-600 text-sm md:text-base mb-8 px-4">
-            Cortesia exclusiva para colaborador da Space Network, Now, Sampa.
-          </p>
-
-          {/* Separador */}
-          <div className="w-full max-w-3xl mx-auto h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent mb-8 md:mb-12"></div>
-
-          {/* Veja quem já confirmou */}
-          <h3 className="text-2xl md:text-3xl font-black text-gray-800 mb-6 md:mb-8">
-            Veja quem já confirmou
-          </h3>
-
-          {/* Carousel de Confirmados com Animação */}
-          <style>{`
-            @keyframes scroll-carousel {
-              0% {
-                transform: translateX(0);
-              }
-              100% {
-                transform: translateX(-50%);
-              }
-            }
-            .carousel-scroll {
-              animation: scroll-carousel 30s linear infinite;
-            }
-            .carousel-scroll:hover {
-              animation-play-state: paused;
-            }
-          `}</style>
-          
-          <div className="relative overflow-hidden mb-8">
-            {confirmedAttendees.length > 0 ? (
-              <div className="flex carousel-scroll">
-                {[...confirmedAttendees, ...confirmedAttendees].map((person, idx) => (
-                  <div
-                    key={idx}
-                    className="flex-shrink-0 flex flex-col items-center mx-3 md:mx-4"
-                  >
-                    <div className={`w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br ${person.color} text-white font-black flex items-center justify-center text-4xl md:text-5xl shadow-lg transform transition-all hover:scale-110`}>
-                      {person.mood}
-                    </div>
-                    <p className="mt-3 text-sm md:text-base font-bold text-gray-800 text-center max-w-[100px]">
-                      {person.fullName}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="flex justify-center gap-3 md:gap-4">
-                {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
-                  <div
-                    key={num}
-                    className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gray-300 animate-pulse"
-                  ></div>
-                ))}
-              </div>
-            )}
+            <p className="text-gray-600 mt-4">
+              <strong>21 de Dezembro de 2025</strong> (Domingo) · 14h00
+            </p>
           </div>
         </div>
 
-        {/* Modal de Formulário */}
-        {isModalOpen && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
-            <div className="bg-white text-gray-800 rounded-3xl shadow-2xl p-6 md:p-8 max-w-2xl w-full my-8 max-h-[90vh] overflow-y-auto">
-              {/* Cabeçalho do Modal */}
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl md:text-3xl font-black text-gray-800">Formulário de Confirmação</h3>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsModalOpen(false);
-                    setError('');
-                  }}
-                  className="text-gray-400 hover:text-gray-600 transition-colors text-3xl font-bold leading-none"
-                >
-                  ×
-                </button>
-              </div>
+        {/* CTA Button */}
+        <div className="text-center mb-12">
+          <button
+            onClick={handleOpenWizard}
+            className="group bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-12 py-6 rounded-2xl text-2xl md:text-3xl font-black shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 uppercase"
+          >
+            <span className="flex items-center gap-3">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+              </svg>
+              Quero Participar!
+              <svg className="w-8 h-8 group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </span>
+          </button>
+        </div>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {error && (
-                  <div className="bg-red-50 border-2 border-red-400 text-red-700 px-4 py-3 rounded-lg text-sm md:text-base">
-                    {error}
-                  </div>
-                )}
-
-                {/* Nome do Colaborador com Autocomplete */}
-                <div className="relative">
-                  <label className="block text-sm md:text-base font-bold mb-2 text-gray-700">
-                    Nome do Colaborador <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={handleNameChange}
-                    onFocus={() => name.length > 1 && setShowSuggestions(true)}
-                    placeholder="Digite seu nome para buscar..."
-                    className="w-full px-4 py-3 md:py-4 border-2 border-gray-300 rounded-xl focus:border-pink-500 focus:ring-2 focus:ring-pink-200 focus:outline-none text-base transition-all"
-                    required
-                  />
-                  
-                  {showSuggestions && suggestions.length > 0 && (
-                    <div className="absolute z-20 w-full mt-2 bg-white border-2 border-gray-300 rounded-xl shadow-2xl max-h-60 overflow-y-auto">
-                      {suggestions.map((emp, idx) => (
-                        <div
-                          key={idx}
-                          onClick={() => handleSuggestionClick(emp)}
-                          className="px-4 py-3 hover:bg-pink-50 cursor-pointer border-b last:border-b-0 transition-colors"
-                        >
-                          <div className="font-semibold text-gray-800">{emp.name}</div>
-                          <div className="text-sm text-gray-500">{emp.department}</div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {selectedEmployee && (
-                    <div className="mt-3 p-3 md:p-4 bg-green-50 border-2 border-green-400 rounded-xl flex items-center gap-3">
-                      <span className="text-2xl md:text-3xl">✓</span>
-                      <div>
-                        <div className="font-bold text-green-800 text-base md:text-lg">{selectedEmployee.name}</div>
-                        <div className="text-sm text-green-600">Colaborador confirmado - {selectedEmployee.department}</div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* RG do Colaborador */}
-                {selectedEmployee && (
-                  <div>
-                    <label className="block text-sm md:text-base font-bold mb-2 text-gray-700">
-                      RG do Colaborador <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={employeeRG}
-                      onChange={(e) => setEmployeeRG(e.target.value)}
-                      placeholder="Ex: 12.345.678-9"
-                      className="w-full px-4 py-3 md:py-4 border-2 border-gray-300 rounded-xl focus:border-pink-500 focus:ring-2 focus:ring-pink-200 focus:outline-none text-base transition-all"
-                      required
-                    />
-                  </div>
-                )}
-
-                {/* Acompanhantes? */}
-                {selectedEmployee && employeeRG && (
-                  <div>
-                    <label className="block text-sm md:text-base font-bold mb-3 text-gray-700">
-                      Vai levar acompanhantes? <span className="text-red-500">*</span>
-                    </label>
-                    <div className="grid grid-cols-2 gap-3 md:gap-4">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setHasCompanions(true);
-                          if (adults.length === 0 && children.length === 0) {
-                            addAdult();
-                          }
-                        }}
-                        className={`py-3 md:py-4 px-6 rounded-xl font-bold transition-all text-base md:text-lg ${
-                          hasCompanions === true
-                            ? 'bg-gradient-to-r from-pink-500 to-pink-600 text-white shadow-lg'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
-                      >
-                        Sim
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setHasCompanions(false);
-                          setAdults([]);
-                          setChildren([]);
-                        }}
-                        className={`py-3 md:py-4 px-6 rounded-xl font-bold transition-all text-base md:text-lg ${
-                          hasCompanions === false
-                            ? 'bg-gradient-to-r from-pink-500 to-pink-600 text-white shadow-lg'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
-                      >
-                        Não
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Formulário de Acompanhantes */}
-                {hasCompanions && (
-                  <div className="space-y-6 bg-gray-50 p-4 md:p-6 rounded-xl">
-                    <div className="text-center pb-4 border-b border-gray-300">
-                      <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-2">Dados dos Acompanhantes</h3>
-                      <p className="text-sm text-gray-600">Até 2 adultos e 5 crianças</p>
-                    </div>
-
-                    {/* Adultos */}
-                    <div>
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
-                        <h4 className="font-bold text-base md:text-lg text-gray-800">Acompanhantes Adultos ({adults.length}/2)</h4>
-                        {adults.length < 2 && (
-                          <button
-                            type="button"
-                            onClick={addAdult}
-                            className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:shadow-md transition-all text-sm md:text-base whitespace-nowrap"
-                          >
-                            + Adicionar Adulto
-                          </button>
-                        )}
-                      </div>
-
-                  {adults.map((adult, idx) => (
-                    <div key={idx} className="bg-white p-4 rounded-lg mb-4 border-2 border-gray-200">
-                      <div className="flex items-center justify-between mb-3">
-                        <h5 className="font-semibold">Adulto #{idx + 1}</h5>
-                        <button
-                          type="button"
-                          onClick={() => removeAdult(idx)}
-                          className="text-red-500 hover:text-red-700 font-bold"
-                        >
-                          Remover
-                        </button>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <div className="md:col-span-1">
-                          <label className="block text-xs font-semibold mb-1">Nome</label>
-                          <input
-                            type="text"
-                            value={adult.name}
-                            onChange={(e) => updateAdult(idx, 'name', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded focus:border-solar-orange focus:outline-none"
-                            placeholder="Nome completo"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-semibold mb-1">Idade</label>
-                          <input
-                            type="number"
-                            value={adult.age}
-                            onChange={(e) => updateAdult(idx, 'age', parseInt(e.target.value) || 18)}
-                            min="18"
-                            className="w-full px-3 py-2 border border-gray-300 rounded focus:border-solar-orange focus:outline-none"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-semibold mb-1">RG ou CPF</label>
-                          <input
-                            type="text"
-                            value={adult.document}
-                            onChange={(e) => updateAdult(idx, 'document', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded focus:border-solar-orange focus:outline-none"
-                            placeholder="12.345.678-9"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Crianças */}
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="font-bold text-lg">Crianças ({children.length}/5)</h4>
-                    {children.length < 5 && (
-                      <button
-                        type="button"
-                        onClick={addChild}
-                        className="bg-solar-purple text-white px-4 py-2 rounded-lg font-semibold hover:bg-opacity-90 transition-all"
-                      >
-                        + Adicionar Criança
-                      </button>
-                    )}
-                  </div>
-
-                  {children.map((child, idx) => (
-                    <div key={idx} className="bg-white p-4 rounded-lg mb-4 border-2 border-gray-200">
-                      <div className="flex items-center justify-between mb-3">
-                        <h5 className="font-semibold">Criança #{idx + 1}</h5>
-                        <button
-                          type="button"
-                          onClick={() => removeChild(idx)}
-                          className="text-red-500 hover:text-red-700 font-bold"
-                        >
-                          Remover
-                        </button>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <div className="md:col-span-1">
-                          <label className="block text-xs font-semibold mb-1">Nome</label>
-                          <input
-                            type="text"
-                            value={child.name}
-                            onChange={(e) => updateChild(idx, 'name', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded focus:border-solar-orange focus:outline-none"
-                            placeholder="Nome completo"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-semibold mb-1">Idade</label>
-                          <input
-                            type="number"
-                            value={child.age}
-                            onChange={(e) => updateChild(idx, 'age', parseInt(e.target.value) || 0)}
-                            min="0"
-                            max="17"
-                            className="w-full px-3 py-2 border border-gray-300 rounded focus:border-solar-orange focus:outline-none"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-semibold mb-1">RG ou CPF</label>
-                          <input
-                            type="text"
-                            value={child.document}
-                            onChange={(e) => updateChild(idx, 'document', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded focus:border-solar-orange focus:outline-none"
-                            placeholder="12.345.678-9"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Resumo de Compras */}
-                {(adults.length > 0 || children.length > 0) && (
-                  <div className="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4">
-                    <h4 className="font-bold text-lg mb-3 text-yellow-800">📋 Resumo de Ingressos</h4>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span>Diárias de Acompanhante:</span>
-                        <span className="font-bold">{totalDailyPasses}</span>
-                      </div>
-                      {wantsTransport && (
-                        <div className="flex justify-between">
-                          <span>Transfers de Ônibus:</span>
-                          <span className="font-bold">{totalTransport}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-                {/* Transporte */}
-                {selectedEmployee && hasCompanions !== null && (
-                  <div>
-                    <label className="block text-sm md:text-base font-bold mb-3 text-gray-700">
-                      Deseja utilizar o transporte (ônibus)? <span className="text-red-500">*</span>
-                    </label>
-                    <div className="grid grid-cols-2 gap-3 md:gap-4">
-                      <button
-                        type="button"
-                        onClick={() => setWantsTransport(true)}
-                        className={`py-3 md:py-4 px-6 rounded-xl font-bold transition-all text-base md:text-lg ${
-                          wantsTransport === true
-                            ? 'bg-gradient-to-r from-pink-500 to-pink-600 text-white shadow-lg'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
-                      >
-                        Sim
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setWantsTransport(false)}
-                        className={`py-3 md:py-4 px-6 rounded-xl font-bold transition-all text-base md:text-lg ${
-                          wantsTransport === false
-                            ? 'bg-gradient-to-r from-pink-500 to-pink-600 text-white shadow-lg'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
-                      >
-                        Não
-                      </button>
-                    </div>
-                    {wantsTransport && (
-                      <p className="text-sm text-gray-600 mt-3 text-center">
-                        Vagas restantes no ônibus: <span className="font-bold text-pink-600">{remainingSeats}</span>
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                {/* Termos e Condições */}
-                {wantsTransport !== null && (
-                  <div className="flex items-start gap-3">
-                    <input
-                      type="checkbox"
-                      id="terms"
-                      checked={agreedToRules}
-                      onChange={(e) => setAgreedToRules(e.target.checked)}
-                      className="mt-1 w-5 h-5 accent-pink-600"
-                    />
-                    <label htmlFor="terms" className="text-sm md:text-base text-gray-700">
-                      Concordo com os{' '}
-                      <button
-                        type="button"
-                        onClick={handleRulesClick}
-                        className="text-pink-600 font-bold underline hover:text-pink-700"
-                      >
-                        termos e condições do evento
-                      </button>
-                      {' '}e confirmo que as informações fornecidas estão corretas.
-                    </label>
-                  </div>
-                )}
-
-                {/* Botão de Enviar */}
-                <button
-                  type="submit"
-                  disabled={isSubmitting || showDuplicateModal || showPasswordModal}
-                  className="w-full bg-gradient-to-r from-pink-500 via-pink-600 to-orange-500 text-white font-black py-4 md:py-5 px-8 rounded-2xl text-lg md:text-xl hover:shadow-2xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none uppercase"
-                >
-                  {isSubmitting ? (isEditMode ? 'Atualizando...' : 'Confirmando...') : (isEditMode ? 'Atualizar Confirmação ✏️' : 'Confirmar Presença 🎉')}
-                </button>
-              </form>
+        {/* Warning about transport */}
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-2xl p-6 mb-12">
+          <div className="flex items-start gap-4">
+            <div className="flex-shrink-0">
+              <svg className="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+                <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1v-5a1 1 0 00-.293-.707l-2-2A1 1 0 0015 7h-1z" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h4 className="font-bold text-gray-800 text-lg mb-2">
+                Transporte disponível
+              </h4>
+              <p className="text-gray-700 mb-2">
+                Temos <strong className="text-blue-600">{remainingSeats} vagas</strong> disponíveis no ônibus!
+              </p>
+              <p className="text-sm text-gray-600">
+                💰 Valor: R$ 64,19 à vista ou 12x R$ 6,53 por pessoa
+              </p>
             </div>
           </div>
-        )}
+        </div>
 
-        {/* Modal de Confirmação Duplicada */}
-        {showDuplicateModal && existingConfirmation && (
-          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-            <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-8 max-w-md w-full">
-              <h3 className="text-2xl md:text-3xl font-black text-gray-800 mb-4 text-center">
-                {existingConfirmation.employee_name}
-              </h3>
-              <div className="text-center mb-6">
-                <div className="text-6xl mb-4">⚠️</div>
-                <p className="text-lg text-gray-700">
-                  Você já realizou suas confirmações.
-                </p>
-              </div>
-              <div className="flex flex-col gap-3">
-                <button
-                  onClick={handleEditRequest}
-                  className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-4 px-6 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all transform hover:scale-105 shadow-lg"
+        {/* Confirmed Attendees Carousel */}
+        {confirmedAttendees.length > 0 && (
+          <div className="bg-white rounded-3xl shadow-xl p-8 mb-12">
+            <h3 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6 text-center">
+              Quem já confirmou presença
+            </h3>
+            <div className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide">
+              {confirmedAttendees.map((attendee, index) => (
+                <div
+                  key={index}
+                  className="flex-shrink-0 group"
+                  title={attendee.fullName}
                 >
-                  Deseja editar?
-                </button>
-                <button
-                  onClick={handleCancelDuplicate}
-                  className="w-full bg-gray-200 text-gray-700 font-bold py-4 px-6 rounded-xl hover:bg-gray-300 transition-all"
-                >
-                  Cancelar
-                </button>
-              </div>
+                  <div className={`w-16 h-16 bg-gradient-to-r ${attendee.color} rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg group-hover:scale-110 transition-transform cursor-pointer`}>
+                    {attendee.initials}
+                  </div>
+                  <div className="text-center mt-2 text-2xl">{attendee.mood}</div>
+                </div>
+              ))}
             </div>
-          </div>
-        )}
-
-        {/* Modal de Validação de Senha */}
-        {showPasswordModal && existingConfirmation && (
-          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-            <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-8 max-w-md w-full">
-              <h3 className="text-2xl md:text-3xl font-black text-gray-800 mb-4 text-center">
-                Validação de Segurança
-              </h3>
-              <div className="mb-6">
-                <div className="text-5xl mb-4 text-center">🔒</div>
-                <p className="text-base text-gray-700 mb-4 text-center">
-                  Digite os 5 primeiros caracteres do seu RG ou CPF cadastrado
-                </p>
-                <input
-                  type="text"
-                  value={passwordInput}
-                  onChange={(e) => {
-                    setPasswordInput(e.target.value);
-                    setPasswordError('');
-                  }}
-                  maxLength={5}
-                  placeholder="Ex: 12345"
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none text-lg text-center font-bold tracking-widest"
-                  autoFocus
-                />
-                {passwordError && (
-                  <p className="text-red-600 text-sm mt-2 text-center font-semibold">
-                    {passwordError}
-                  </p>
-                )}
-              </div>
-              <div className="flex flex-col gap-3">
-                <button
-                  onClick={handlePasswordValidation}
-                  disabled={passwordInput.length < 5}
-                  className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white font-bold py-4 px-6 rounded-xl hover:from-green-600 hover:to-green-700 transition-all transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                >
-                  Validar
-                </button>
-                <button
-                  onClick={handleCancelPassword}
-                  className="w-full bg-gray-200 text-gray-700 font-bold py-4 px-6 rounded-xl hover:bg-gray-300 transition-all"
-                >
-                  Cancelar
-                </button>
-              </div>
-            </div>
+            <p className="text-center text-gray-600 mt-4 font-semibold">
+              {confirmedAttendees.length} {confirmedAttendees.length === 1 ? 'pessoa confirmada' : 'pessoas confirmadas'}
+            </p>
           </div>
         )}
       </div>
+
+      {/* Wizard Modal */}
+      {isWizardOpen && (
+        <ConfirmationWizard
+          onClose={handleCloseWizard}
+          onSuccess={handleWizardSuccess}
+        />
+      )}
     </section>
   );
 };
