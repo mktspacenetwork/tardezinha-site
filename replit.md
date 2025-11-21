@@ -8,7 +8,10 @@ This is a React + TypeScript event management application for "Tardezinha da Spa
 ## Recent Changes (November 21, 2025)
 
 ### Anti-Duplication System Implementation
-- **Success Screen Redirect Notice**: Added countdown timer (5 seconds) that notifies user they will be redirected to purchase page when they select dailies/transport
+- **Success Screen Logic**: 
+  - WITHOUT companions/transport: Shows confetti + "Parabéns! Sua presença está confirmada" (no redirect)
+  - WITH companions/transport: Shows "Você está sendo redirecionado..." + countdown timer (6 seconds) + auto-redirect to purchase page
+  - Button text: "Ir agora" for immediate redirect
 - **Single Confirmation Enforcement**: 
   - Created unique database constraint on `confirmations.employee_id` to prevent duplicate confirmations
   - Added pre-submit validation that checks for existing confirmations before allowing new ones
@@ -17,7 +20,7 @@ This is a React + TypeScript event management application for "Tardezinha da Spa
   - When employee tries to confirm again, system shows modal asking if they want to edit
   - Requires entering first 5 digits of RG/CPF from original confirmation before allowing edits
   - Complete flow: duplicate detection → edit request → password validation → edit mode → update
-- **Redirect Behavior**: Users with purchases are auto-redirected to purchase page after 5 seconds (can click button to redirect immediately)
+- **Redirect Behavior**: Users with purchases are auto-redirected to https://useingresso.com/evento/691b30d3dc465aca63b2bbef after 6 seconds
 
 ### Previous Changes
 - **Event Date Consistency Fix**: Synchronized both countdown timers (Countdown.tsx and Checkin.tsx) to use the same event date: December 21, 2025 at 12:00 PM
