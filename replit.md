@@ -7,7 +7,23 @@ This is a React + TypeScript event management application for "Tardezinha da Spa
 
 ## Recent Changes (November 21, 2025)
 
-### 6-Step Wizard System Implementation (Latest)
+### Edit Mode UX Improvement (Latest)
+- **Inline Duplicate Detection**: Completely redesigned duplicate detection flow without modals
+  - When employee already has confirmation, system shows inline warning immediately in Step 1
+  - Password field (RG/CPF) appears directly on the same screen
+  - "Carregar e Editar" button validates password and loads existing data
+  - Much clearer UX - no confusing overlapping modals
+- **Automatic Data Loading**: When password validated successfully:
+  - All existing data (companions, transport choices) loaded into wizard
+  - Costs automatically recalculated
+  - User proceeds to Step 2 in edit mode with all fields pre-filled
+- **Visual Feedback**:
+  - Yellow warning box explains duplicate situation clearly
+  - Blue "Modo de Edição" badge visible in wizard header
+  - Employee name remains visible while entering password
+- **Removed Complexity**: Eliminated `showDuplicateModal` and `showPasswordModal` states for simpler, more reliable flow
+
+### 6-Step Wizard System Implementation
 - **Complete Replacement**: Modal-based confirmation system replaced with professional 6-step wizard interface
 - **System Architecture**:
   - **ConfirmationWizard.tsx**: Main wizard component with WizardContext for state management across steps
