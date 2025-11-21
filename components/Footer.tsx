@@ -28,7 +28,7 @@ const Footer: React.FC<FooterProps> = ({ onAdminClick, onOpenRules }) => {
           </p>
            <div className="mb-4">
              <p className="text-gray-400">
-               <span className="font-bold text-solar-orange">21 de Dezembro de 2025</span> <br/> Sábado • 14:00h
+               <span className="font-bold text-solar-orange">21 de Dezembro de 2025</span> <br/> Domingo • 14:00h
              </p>
              <button 
                type="button"
