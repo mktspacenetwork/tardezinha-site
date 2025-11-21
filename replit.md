@@ -5,7 +5,13 @@ This is a React + TypeScript event management application for "Tardezinha da Spa
 
 **Current State:** The application is fully configured and running in the Replit environment. It's ready for development and deployment.
 
-## Recent Changes (November 20, 2025)
+## Recent Changes (November 21, 2025)
+- **Event Date Consistency Fix**: Synchronized both countdown timers (Countdown.tsx and Checkin.tsx) to use the same event date: December 21, 2025 at 12:00 PM
+- **Footer Date Correction**: Fixed day of week from "Sábado" to "Domingo" (December 21, 2025 is a Sunday, not Saturday)
+- **Database Column Addition**: Added `employee_id` column to confirmations table with foreign key relationship to employees table for duplicate prevention system
+- **SQL Script Fix**: Created corrected SQL script (ADD_EMPLOYEE_ID_CORRIGIDO.sql) that avoids errors from non-existent columns
+
+## Previous Changes (November 20, 2025)
 - **Supabase Configuration Fix**: Fixed critical bug - changed from `process.env` to `import.meta.env.VITE_*` for proper Vite environment variable access
 - **Checkin Redesign**: Completely redesigned following reference design with gradient title, "100% GRÁTIS" badge, prominent green CTA button, transport warning, countdown, and confirmed attendees carousel
 - **Admin Dashboard Overhaul**: Professional design with dark slate header, refined tabs with elegant SVG icons, soft color palette (blues/grays/emerald), improved statistics cards
