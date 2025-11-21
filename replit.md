@@ -7,6 +7,18 @@ This is a React + TypeScript event management application for "Tardezinha da Spa
 
 ## Recent Changes (November 21, 2025)
 
+### Modal Flow Fix for Duplicate Detection (Latest)
+- **Fixed Race Condition Issue**: Changed approach to prevent blank screen when duplicate is detected
+  - Duplicate modal now overlays on top of main modal (instead of closing main modal)
+  - Submit button is disabled when duplicate or password modals are active, preventing accidental resubmissions
+  - Cancel actions keep main modal open, allowing user to select different employee
+- **Improved User Flow**:
+  - User selects employee who already confirmed → duplicate modal overlays with message
+  - If user cancels → duplicate modal closes, main modal stays open for new selection
+  - If user chooses to edit → password modal overlays for validation
+  - After successful password validation → main modal reopens in edit mode with existing data
+  - Submit button re-enables only when modals are closed and validation complete
+
 ### Anti-Duplication System Implementation
 - **Success Screen Logic**: 
   - WITHOUT companions/transport: Shows confetti + "Parabéns! Sua presença está confirmada" (no redirect)
