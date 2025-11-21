@@ -15,7 +15,7 @@ const PurchaseOptions: React.FC<PurchaseOptionsProps> = ({ showIntro }) => {
   const sectionRef = useRef<HTMLElement>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const TOTAL_BUS_SEATS = 46;
+  const TOTAL_BUS_SEATS = 90;
   const [remainingSeats, setRemainingSeats] = useState(12);
 
   useEffect(() => {
@@ -133,7 +133,7 @@ const PurchaseOptions: React.FC<PurchaseOptionsProps> = ({ showIntro }) => {
               }`}
               style={{ transitionDelay: '150ms' }}
             >
-              {remainingSeats <= 20 && (
+              {remainingSeats > 0 && remainingSeats <= 20 && (
                 <div className="mb-4 inline-flex items-center gap-2 bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-400 text-red-700 px-3 md:px-4 py-2 rounded-lg font-semibold text-xs md:text-sm animate-pulse">
                   <span className="text-base md:text-lg">⚠️</span>
                   <span>Restam apenas {remainingSeats} vagas no transporte</span>
@@ -149,15 +149,18 @@ const PurchaseOptions: React.FC<PurchaseOptionsProps> = ({ showIntro }) => {
                  <p className="flex items-start"><CheckIcon /> Ida e volta até o local do evento em ônibus moderno e confortável a partir das Sedes da Space.</p>
               </div>
               <button 
-                onClick={() => handlePurchaseClick(showIntro)}
-                aria-disabled={!showIntro}
+                onClick={() => remainingSeats > 0 && handlePurchaseClick(showIntro)}
+                disabled={remainingSeats === 0}
+                aria-disabled={!showIntro || remainingSeats === 0}
                 className={`mt-auto w-full font-bold py-3 md:py-4 px-6 rounded-xl transition-all duration-300 text-base md:text-lg ${
-                  showIntro
+                  remainingSeats === 0
+                    ? 'bg-gray-400 text-gray-600 cursor-not-allowed opacity-70'
+                    : showIntro
                     ? 'bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105'
                     : 'bg-gray-300 text-gray-500 cursor-pointer opacity-60 hover:opacity-80'
                 }`}
               >
-                {showIntro ? 'Reservar Transfer' : 'Confirme sua presença para liberar'}
+                {remainingSeats === 0 ? 'ESGOTADAS' : showIntro ? 'Reservar Transfer' : 'Confirme sua presença para liberar'}
               </button>
             </div>
 

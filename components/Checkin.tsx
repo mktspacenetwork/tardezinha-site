@@ -4,18 +4,26 @@ import { supabase, isSupabaseConfigured } from '../supabaseClient';
 
 declare var confetti: any;
 
-const confirmedAttendees = [
-  { initials: 'JS', fullName: 'João Silva', mood: '🎉', color: 'from-orange-400 to-orange-600' },
-  { initials: 'AM', fullName: 'Ana Martins', mood: '😎', color: 'from-pink-400 to-pink-600' },
-  { initials: 'CV', fullName: 'Carlos Vieira', mood: '🤩', color: 'from-rose-400 to-rose-600' },
-  { initials: 'LP', fullName: 'Luiza Pereira', mood: '🥳', color: 'from-orange-500 to-pink-500' },
-  { initials: 'RG', fullName: 'Ricardo Gomes', mood: '🚀', color: 'from-pink-500 to-pink-700' },
-  { initials: 'MS', fullName: 'Mariana Santos', mood: '🔥', color: 'from-orange-600 to-red-500' },
-  { initials: 'TS', fullName: 'Thiago Souza', mood: '🕺', color: 'from-pink-300 to-pink-500' },
-  { initials: 'BC', fullName: 'Beatriz Costa', mood: '🎶', color: 'from-orange-400 to-pink-400' },
-  { initials: 'FG', fullName: 'Felipe Garcia', mood: '🌴', color: 'from-rose-500 to-pink-600' },
-  { initials: 'NA', fullName: 'Natália Alves', mood: '☀️', color: 'from-orange-500 to-orange-700' },
+const MOOD_EMOJIS = ['🎉', '😎', '🤩', '🥳', '🚀', '🔥', '🕺', '💃', '🎶', '🌴', '☀️', '⭐', '✨', '🎊', '🌟'];
+const GRADIENT_COLORS = [
+  'from-orange-400 to-orange-600',
+  'from-pink-400 to-pink-600',
+  'from-rose-400 to-rose-600',
+  'from-orange-500 to-pink-500',
+  'from-pink-500 to-pink-700',
+  'from-orange-600 to-red-500',
+  'from-pink-300 to-pink-500',
+  'from-orange-400 to-pink-400',
+  'from-rose-500 to-pink-600',
+  'from-orange-500 to-orange-700',
 ];
+
+interface ConfirmedAttendee {
+  initials: string;
+  fullName: string;
+  mood: string;
+  color: string;
+}
 
 interface CheckinProps {
   onConfirm: () => void;
@@ -51,8 +59,22 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
   const [totalDailyPasses, setTotalDailyPasses] = useState(0);
   const [totalTransport, setTotalTransport] = useState(0);
 
-  const TOTAL_BUS_SEATS = 46;
-  const [remainingSeats, setRemainingSeats] = useState(12);
+  const TOTAL_BUS_SEATS = 90;
+  const [remainingSeats, setRemainingSeats] = useState(90);
+  
+  // Confirmed attendees from database
+  const [confirmedAttendees, setConfirmedAttendees] = useState<ConfirmedAttendee[]>([]);
+
+  // Edit mode states
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingConfirmationId, setEditingConfirmationId] = useState<number | null>(null);
+  const [existingConfirmation, setExistingConfirmation] = useState<Confirmation | null>(null);
+  
+  // Modal states for duplicate confirmation
+  const [showDuplicateModal, setShowDuplicateModal] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordInput, setPasswordInput] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
   useEffect(() => {
     const observer = new IntersectionObserver(([entry]) => {
@@ -86,6 +108,40 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
         }
       };
       fetchSeats();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isSupabaseConfigured()) {
+      const fetchConfirmedAttendees = async () => {
+        const { data, error } = await supabase
+          .from('confirmations')
+          .select('employee_name')
+          .order('created_at', { ascending: false });
+        
+        if (!error && data) {
+          const attendees: ConfirmedAttendee[] = data.map((conf) => {
+            const nameParts = conf.employee_name.trim().split(' ');
+            const firstName = nameParts[0] || '';
+            const lastName = nameParts[nameParts.length - 1] || '';
+            const initials = (firstName[0] || '') + (nameParts.length > 1 ? lastName[0] || '' : '');
+            
+            const randomMood = MOOD_EMOJIS[Math.floor(Math.random() * MOOD_EMOJIS.length)];
+            const randomColor = GRADIENT_COLORS[Math.floor(Math.random() * GRADIENT_COLORS.length)];
+            
+            return {
+              initials: initials.toUpperCase(),
+              fullName: conf.employee_name,
+              mood: randomMood,
+              color: randomColor,
+            };
+          });
+          
+          setConfirmedAttendees(attendees);
+        }
+      };
+      
+      fetchConfirmedAttendees();
     }
   }, []);
 
@@ -133,17 +189,97 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
     }
   };
 
-  const handleSuggestionClick = (employee: Employee) => {
+  const checkExistingConfirmation = async (employeeId: number) => {
+    if (!isSupabaseConfigured()) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('confirmations')
+        .select('*, companions(*)')
+        .eq('employee_id', employeeId)
+        .single();
+
+      if (!error && data) {
+        setExistingConfirmation(data as Confirmation);
+        setShowDuplicateModal(true);
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error('Erro ao verificar confirmação existente:', err);
+      return false;
+    }
+  };
+
+  const handleSuggestionClick = async (employee: Employee) => {
     setName(employee.name);
     setSelectedEmployee(employee);
     setSuggestions([]);
     setShowSuggestions(false);
+
+    if (employee.id) {
+      await checkExistingConfirmation(employee.id);
+    }
   };
 
   const handleRulesClick = (e: React.MouseEvent) => {
     e.preventDefault();
     setIsModalOpen(false);
     onOpenRules();
+  };
+
+  const handleEditRequest = () => {
+    setShowDuplicateModal(false);
+    setShowPasswordModal(true);
+    setPasswordInput('');
+    setPasswordError('');
+  };
+
+  const handlePasswordValidation = async () => {
+    if (!existingConfirmation) return;
+
+    const existingRGFirst5 = existingConfirmation.employee_rg.replace(/\D/g, '').substring(0, 5);
+    const inputFirst5 = passwordInput.replace(/\D/g, '').substring(0, 5);
+
+    if (existingRGFirst5 === inputFirst5) {
+      setShowPasswordModal(false);
+      await loadExistingConfirmationData();
+    } else {
+      setPasswordError('Documento incorreto. Verifique os 5 primeiros caracteres.');
+    }
+  };
+
+  const loadExistingConfirmationData = async () => {
+    if (!existingConfirmation || !isSupabaseConfigured()) return;
+
+    setIsEditMode(true);
+    setEditingConfirmationId(existingConfirmation.id || null);
+    setEmployeeRG(existingConfirmation.employee_rg);
+    setHasCompanions(existingConfirmation.has_companions);
+    setWantsTransport(existingConfirmation.wants_transport);
+
+    if (existingConfirmation.companions && existingConfirmation.companions.length > 0) {
+      const adultsData = existingConfirmation.companions.filter((c: Companion) => c.type === 'adult');
+      const childrenData = existingConfirmation.companions.filter((c: Companion) => c.type === 'child');
+      setAdults(adultsData);
+      setChildren(childrenData);
+    }
+  };
+
+  const handleCancelDuplicate = () => {
+    setShowDuplicateModal(false);
+    setExistingConfirmation(null);
+    setSelectedEmployee(null);
+    setName('');
+  };
+
+  const handleCancelPassword = () => {
+    setShowPasswordModal(false);
+    setPasswordInput('');
+    setPasswordError('');
+    setExistingConfirmation(null);
+    setSelectedEmployee(null);
+    setName('');
   };
 
   const addAdult = () => {
@@ -239,8 +375,8 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
     let confirmationId: number | null = null;
 
     try {
-      // Inserir confirmação
       const confirmation: Partial<Confirmation> = {
+        employee_id: selectedEmployee.id,
         employee_name: selectedEmployee.name,
         employee_rg: employeeRG,
         department: selectedEmployee.department,
@@ -252,17 +388,41 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
         total_transport: totalTransport,
       };
 
-      const { data: confirmationData, error: confirmationError } = await supabase
-        .from('confirmations')
-        .insert(confirmation)
-        .select()
-        .single();
+      let confirmationData;
+      
+      if (isEditMode && editingConfirmationId) {
+        const { data, error: updateError } = await supabase
+          .from('confirmations')
+          .update(confirmation)
+          .eq('id', editingConfirmationId)
+          .select()
+          .single();
 
-      if (confirmationError) {
-        throw confirmationError;
+        if (updateError) {
+          throw updateError;
+        }
+        
+        confirmationData = data;
+        confirmationId = editingConfirmationId;
+
+        await supabase
+          .from('companions')
+          .delete()
+          .eq('confirmation_id', editingConfirmationId);
+      } else {
+        const { data, error: insertError } = await supabase
+          .from('confirmations')
+          .insert(confirmation)
+          .select()
+          .single();
+
+        if (insertError) {
+          throw insertError;
+        }
+
+        confirmationData = data;
+        confirmationId = confirmationData.id;
       }
-
-      confirmationId = confirmationData.id;
 
       // Inserir acompanhantes
       if (hasCompanions && confirmationData) {
@@ -326,6 +486,13 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
     setChildren([]);
     setError('');
     setStep('form');
+    setIsEditMode(false);
+    setEditingConfirmationId(null);
+    setExistingConfirmation(null);
+    setShowDuplicateModal(false);
+    setShowPasswordModal(false);
+    setPasswordInput('');
+    setPasswordError('');
   };
 
   if (step === 'success') {
@@ -394,9 +561,12 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
       <div className="max-w-4xl mx-auto">
         {/* Cabeçalho da Seção */}
         <div className={`text-center mb-8 md:mb-12 relative ${isVisible ? 'animate-fadeInUp' : 'opacity-0'}`}>
-          {/* Badge 100% Grátis */}
-          <div className="absolute -top-4 md:-top-6 right-0 md:right-12 bg-gradient-to-br from-green-400 to-green-600 text-white rounded-full px-4 md:px-6 py-2 md:py-3 font-black text-sm md:text-base shadow-lg transform rotate-12 animate-pulse z-10">
-            100% GRÁTIS
+          {/* Badge COLABORADOR 100% Grátis */}
+          <div className="absolute -top-4 md:-top-6 right-0 md:right-12 bg-gradient-to-br from-green-400 to-green-600 text-white rounded-full px-4 md:px-6 py-2 md:py-3 font-black text-xs md:text-sm shadow-lg transform rotate-12 animate-pulse z-10">
+            <div className="text-center leading-tight">
+              <div>COLABORADOR</div>
+              <div>100% GRÁTIS</div>
+            </div>
           </div>
 
           {/* Título com Gradiente */}
@@ -418,14 +588,6 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
               QUERO PARTICIPAR!
             </button>
           </div>
-
-          {/* Aviso de Vagas */}
-          {remainingSeats < 20 && (
-            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-red-50 to-pink-50 border-2 border-red-400 text-red-700 px-4 md:px-6 py-3 rounded-lg mb-6 font-semibold text-sm md:text-base">
-              <span className="text-xl">⚠️</span>
-              <span>Restam apenas {remainingSeats} vagas no transporte!</span>
-            </div>
-          )}
 
           {/* Countdown */}
           {remainingDays > 0 && (
@@ -466,21 +628,32 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
           `}</style>
           
           <div className="relative overflow-hidden mb-8">
-            <div className="flex carousel-scroll">
-              {[...confirmedAttendees, ...confirmedAttendees].map((person, idx) => (
-                <div
-                  key={idx}
-                  className="flex-shrink-0 flex flex-col items-center mx-3 md:mx-4"
-                >
-                  <div className={`w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br ${person.color} text-white font-black flex items-center justify-center text-4xl md:text-5xl shadow-lg transform transition-all hover:scale-110`}>
-                    {person.mood}
+            {confirmedAttendees.length > 0 ? (
+              <div className="flex carousel-scroll">
+                {[...confirmedAttendees, ...confirmedAttendees].map((person, idx) => (
+                  <div
+                    key={idx}
+                    className="flex-shrink-0 flex flex-col items-center mx-3 md:mx-4"
+                  >
+                    <div className={`w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br ${person.color} text-white font-black flex items-center justify-center text-4xl md:text-5xl shadow-lg transform transition-all hover:scale-110`}>
+                      {person.mood}
+                    </div>
+                    <p className="mt-3 text-sm md:text-base font-bold text-gray-800 text-center max-w-[100px]">
+                      {person.fullName}
+                    </p>
                   </div>
-                  <p className="mt-3 text-sm md:text-base font-bold text-gray-800 text-center max-w-[100px]">
-                    {person.fullName}
-                  </p>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex justify-center gap-3 md:gap-4">
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
+                  <div
+                    key={num}
+                    className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gray-300 animate-pulse"
+                  ></div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -834,9 +1007,89 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
                   disabled={isSubmitting}
                   className="w-full bg-gradient-to-r from-pink-500 via-pink-600 to-orange-500 text-white font-black py-4 md:py-5 px-8 rounded-2xl text-lg md:text-xl hover:shadow-2xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none uppercase"
                 >
-                  {isSubmitting ? 'Confirmando...' : 'Confirmar Presença 🎉'}
+                  {isSubmitting ? (isEditMode ? 'Atualizando...' : 'Confirmando...') : (isEditMode ? 'Atualizar Confirmação ✏️' : 'Confirmar Presença 🎉')}
                 </button>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de Confirmação Duplicada */}
+        {showDuplicateModal && existingConfirmation && (
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-8 max-w-md w-full">
+              <h3 className="text-2xl md:text-3xl font-black text-gray-800 mb-4 text-center">
+                {existingConfirmation.employee_name}
+              </h3>
+              <div className="text-center mb-6">
+                <div className="text-6xl mb-4">⚠️</div>
+                <p className="text-lg text-gray-700">
+                  Você já realizou suas confirmações.
+                </p>
+              </div>
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={handleEditRequest}
+                  className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-4 px-6 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all transform hover:scale-105 shadow-lg"
+                >
+                  Deseja editar?
+                </button>
+                <button
+                  onClick={handleCancelDuplicate}
+                  className="w-full bg-gray-200 text-gray-700 font-bold py-4 px-6 rounded-xl hover:bg-gray-300 transition-all"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de Validação de Senha */}
+        {showPasswordModal && existingConfirmation && (
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-8 max-w-md w-full">
+              <h3 className="text-2xl md:text-3xl font-black text-gray-800 mb-4 text-center">
+                Validação de Segurança
+              </h3>
+              <div className="mb-6">
+                <div className="text-5xl mb-4 text-center">🔒</div>
+                <p className="text-base text-gray-700 mb-4 text-center">
+                  Digite os 5 primeiros caracteres do seu RG ou CPF cadastrado
+                </p>
+                <input
+                  type="text"
+                  value={passwordInput}
+                  onChange={(e) => {
+                    setPasswordInput(e.target.value);
+                    setPasswordError('');
+                  }}
+                  maxLength={5}
+                  placeholder="Ex: 12345"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none text-lg text-center font-bold tracking-widest"
+                  autoFocus
+                />
+                {passwordError && (
+                  <p className="text-red-600 text-sm mt-2 text-center font-semibold">
+                    {passwordError}
+                  </p>
+                )}
+              </div>
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={handlePasswordValidation}
+                  disabled={passwordInput.length < 5}
+                  className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white font-bold py-4 px-6 rounded-xl hover:from-green-600 hover:to-green-700 transition-all transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                >
+                  Validar
+                </button>
+                <button
+                  onClick={handleCancelPassword}
+                  className="w-full bg-gray-200 text-gray-700 font-bold py-4 px-6 rounded-xl hover:bg-gray-300 transition-all"
+                >
+                  Cancelar
+                </button>
+              </div>
             </div>
           </div>
         )}

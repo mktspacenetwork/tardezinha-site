@@ -28,6 +28,7 @@ export interface Companion {
 
 export interface Confirmation {
   id?: number;
+  employee_id?: number;
   employee_name: string;
   employee_rg: string;
   department: string;
