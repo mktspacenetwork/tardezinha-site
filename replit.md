@@ -7,7 +7,33 @@ This is a React + TypeScript event management application for "Tardezinha da Spa
 
 ## Recent Changes (November 21, 2025)
 
-### Modal Flow Fix for Duplicate Detection (Latest)
+### 6-Step Wizard System Implementation (Latest)
+- **Complete Replacement**: Modal-based confirmation system replaced with professional 6-step wizard interface
+- **System Architecture**:
+  - **ConfirmationWizard.tsx**: Main wizard component with WizardContext for state management across steps
+  - **Step Components**: StepEmployeeLogin, StepAttendance, StepCompanions, StepTransport, StepSummary, StepSuccess
+  - **Cost Calculator Utility** (`utils/costCalculator.ts`): Centralized pricing logic with age-based calculations
+- **Wizard Flow**:
+  1. **Employee Login** - Autocomplete search (156 employees) + RG/CPF collection (min 5 chars, used as password)
+  2. **Attendance** - Yes/No choice (No = simple farewell screen, Yes = continue)
+  3. **Companions** - Add adults (max 2) + children (max 5) with name/RG/age collection
+  4. **Transport** - Bus choice + lap option for children ≤5 years (free transport when on lap)
+  5. **Summary** - Review all data + itemized cost breakdown + final confirmation
+  6. **Success** - Two paths: simple confirmation (no purchases) OR 6-second countdown + redirect (with purchases)
+- **Pricing Rules** (implemented in costCalculator):
+  - **Daily Passes**: Collaborator FREE, Adults 13+ years R$103.78, Children 0-12 years R$51.89 (half price)
+  - **Transport**: R$64.19 per seat (collaborator included), children ≤5 can sit on lap for FREE
+- **Design System**: Light background (#F9FAFB), white cards with shadows, orange/pink gradient (#F97316 → #EC4899) on progress bar and CTA buttons
+- **Duplicate Prevention**: RG-based password validation, edit mode support, database unique constraint on employee_id
+- **Purchase Integration**: Automatic redirect to https://useingresso.com/evento/691b30d3dc465aca63b2bbef when purchases needed
+- **Real-time Cost Calculation**: Costs update immediately as user adds companions and toggles transport options
+
+**Known Limitations:**
+- Companion reordering/removal after lap selection may require manual adjustment
+- Edit mode requires re-validation of companion list for cost recalculation
+- System is optimized for the primary flow (new confirmations without edits)
+
+### Previous Modal Flow Fix for Duplicate Detection
 - **Fixed Race Condition Issue**: Changed approach to prevent blank screen when duplicate is detected
   - Duplicate modal now overlays on top of main modal (instead of closing main modal)
   - Submit button is disabled when duplicate or password modals are active, preventing accidental resubmissions
@@ -77,8 +103,16 @@ This is a React + TypeScript event management application for "Tardezinha da Spa
 ```
 /
 ├── components/         # React components
+│   ├── wizard/        # 6-step wizard components
+│   │   ├── StepEmployeeLogin.tsx  # Step 1: Employee selection + RG collection
+│   │   ├── StepAttendance.tsx     # Step 2: Will attend? (Yes/No)
+│   │   ├── StepCompanions.tsx     # Step 3: Add adults + children
+│   │   ├── StepTransport.tsx      # Step 4: Bus choice + lap options
+│   │   ├── StepSummary.tsx        # Step 5: Review + confirm
+│   │   └── StepSuccess.tsx        # Step 6: Success (2 flows)
 │   ├── Admin.tsx      # Admin panel
-│   ├── Checkin.tsx    # Event check-in
+│   ├── Checkin.tsx    # Event check-in (now uses wizard)
+│   ├── ConfirmationWizard.tsx  # Main wizard with context
 │   ├── Countdown.tsx  # Event countdown timer
 │   ├── EventDetails.tsx
 │   ├── FAQ.tsx
@@ -87,41 +121,49 @@ This is a React + TypeScript event management application for "Tardezinha da Spa
 │   ├── Header.tsx
 │   ├── Navbar.tsx
 │   ├── PromoSection.tsx
-│   ├── PurchaseOptions.tsx
+│   ├── PurchaseOptions.tsx  # (Legacy - wizard handles purchases)
 │   └── Rules.tsx
+├── utils/
+│   └── costCalculator.ts  # Centralized pricing logic
 ├── data/
 │   └── employees.ts   # Employee data
 ├── App.tsx            # Main application component
 ├── index.tsx          # Application entry point
 ├── index.html         # HTML template
 ├── supabaseClient.ts  # Supabase client configuration
-├── types.ts           # TypeScript type definitions
+├── types.ts           # TypeScript type definitions (includes WizardData, Companion types)
 ├── vite.config.ts     # Vite configuration
 └── package.json       # Project dependencies
 ```
 
 ### Key Features
-- **Event Countdown Timer**: Dynamic countdown showing days until the event
-- **Employee Check-in System**: 
-  - Autocomplete search for 156 employees from Supabase database
-  - Companion tracking (max 2 adults + 5 children with RG/CPF validation)
-  - Bus boarding management with seat allocation
-  - Real-time confirmation carousel showing confirmed attendees
+- **Event Countdown Timer**: Dynamic countdown showing days until the event (December 21, 2025 at 14:00h)
+- **6-Step Confirmation Wizard**: 
+  - Professional step-by-step interface with progress indicator
+  - Employee login with autocomplete search (156 employees) + RG/CPF collection
+  - Attendance confirmation (Yes/No with conditional flow)
+  - Companion management (max 2 adults + 5 children with name/RG/age)
+  - Transport selection with smart lap option for children ≤5 years
+  - Summary with real-time cost breakdown (age-based pricing)
+  - Two success paths: simple confirmation OR purchase redirect
+  - Duplicate prevention with RG-based password validation
+  - Edit mode for updating existing confirmations
+- **Age-Based Pricing System**:
+  - Collaborator: FREE daily pass, PAYS transport (R$ 64,19)
+  - Adults 13+: R$ 103,78 daily pass + R$ 64,19 transport
+  - Children 0-12: R$ 51,89 daily pass (half price) + R$ 64,19 transport
+  - Children ≤5: Can sit on lap for FREE transport
+- **Purchase Integration**: Automatic redirect to https://useingresso.com/evento/691b30d3dc465aca63b2bbef after 6 seconds when purchases needed
 - **Photo Gallery**: Showcase of previous event photos
-- **Purchase Options**: 
-  - Guest daily passes (R$ 103,78)
-  - Bus transfer tickets (R$ 64,19)
-  - Blocked until attendance confirmation
-  - Automatic redirect to purchase platform
 - **Professional Admin Dashboard**:
   - Real-time statistics (confirmations, adults, children, daily passes, transport)
   - Attendance management with full CRUD operations
-  - Bus boarding list with check-in/check-out tracking
+  - Bus boarding list with check-in/check-out tracking (90 seats total)
   - Employee database management
   - Password-protected access (password: 'space2025')
 - **FAQ Section**: Common questions and answers
 - **Event Rules Display**: Complete event guidelines and regulations
-- **Mobile-First Design**: Fully responsive across all devices
+- **Mobile-First Design**: Fully responsive across all devices with light background and gradient accents
 
 ## Configuration
 
