@@ -312,15 +312,15 @@ const Admin: React.FC<AdminProps> = ({ onExitAdmin }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       {/* Header */}
-      <div className="bg-gradient-to-r from-slate-800 to-slate-900 text-white px-4 md:px-6 py-4 md:py-6 shadow-xl border-b border-slate-700">
+      <div className="bg-gradient-to-r from-orange-500 via-pink-500 to-pink-600 text-white px-4 md:px-6 py-4 md:py-6 shadow-xl">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Dashboard Admin</h1>
-            <p className="text-sm text-slate-300 mt-1">Tardezinha da Space</p>
+            <p className="text-sm text-white/90 mt-1">Tardezinha da Space</p>
           </div>
           <button
             onClick={onExitAdmin}
-            className="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white font-semibold px-4 md:px-6 py-2 rounded-lg transition-all border border-white/20"
+            className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white font-semibold px-4 md:px-6 py-2 rounded-lg transition-all border border-white/30"
           >
             Sair
           </button>
@@ -332,20 +332,37 @@ const Admin: React.FC<AdminProps> = ({ onExitAdmin }) => {
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex gap-1 overflow-x-auto scrollbar-hide">
             {[
-              { id: 'dashboard', label: 'Dashboard' },
-              { id: 'confirmations', label: 'Confirmações' },
-              { id: 'bus', label: 'Gestão de Ônibus' },
-              { id: 'employees', label: 'Colaboradores' },
+              { 
+                id: 'dashboard', 
+                label: 'Dashboard',
+                icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+              },
+              { 
+                id: 'confirmations', 
+                label: 'Confirmações',
+                icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+              },
+              { 
+                id: 'bus', 
+                label: 'Gestão de Ônibus',
+                icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" /></svg>
+              },
+              { 
+                id: 'employees', 
+                label: 'Colaboradores',
+                icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+              },
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as TabType)}
-                className={`px-4 md:px-6 py-3 md:py-4 font-semibold border-b-2 transition-all whitespace-nowrap text-sm md:text-base ${
+                className={`flex items-center gap-2 px-4 md:px-6 py-3 md:py-4 font-semibold border-b-2 transition-all whitespace-nowrap text-sm md:text-base ${
                   activeTab === tab.id
-                    ? 'border-slate-800 text-slate-900 bg-slate-50'
+                    ? 'border-pink-500 text-pink-600 bg-pink-50'
                     : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50/50'
                 }`}
               >
+                {tab.icon}
                 {tab.label}
               </button>
             ))}
@@ -429,21 +446,27 @@ const Admin: React.FC<AdminProps> = ({ onExitAdmin }) => {
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 bg-solar-purple text-white px-4 py-3 rounded-lg hover:bg-opacity-90 transition-all"
                 >
-                  <span className="text-2xl">🎫</span>
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                  </svg>
                   <span className="font-semibold">Site de Ingressos</span>
                 </a>
                 <button
                   onClick={handleExport}
                   className="flex items-center gap-3 bg-green-500 text-white px-4 py-3 rounded-lg hover:bg-green-600 transition-all"
                 >
-                  <span className="text-2xl">📥</span>
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
                   <span className="font-semibold">Exportar CSV</span>
                 </button>
                 <button
                   onClick={fetchData}
                   className="flex items-center gap-3 bg-blue-500 text-white px-4 py-3 rounded-lg hover:bg-blue-600 transition-all"
                 >
-                  <span className="text-2xl">🔄</span>
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
                   <span className="font-semibold">Atualizar Dados</span>
                 </button>
               </div>
@@ -508,14 +531,20 @@ const Admin: React.FC<AdminProps> = ({ onExitAdmin }) => {
                     <div className="flex gap-2">
                       <button
                         onClick={() => setEditingConfirmation(conf)}
-                        className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all"
+                        className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all"
                       >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
                         Editar
                       </button>
                       <button
                         onClick={() => handleDelete(conf.id!, conf.employee_name)}
-                        className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all"
+                        className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all"
                       >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
                         Excluir
                       </button>
                     </div>
@@ -656,9 +685,23 @@ const Admin: React.FC<AdminProps> = ({ onExitAdmin }) => {
                 <h3 className="text-xl font-bold">Lista de Colaboradores ({employees.length})</h3>
                 <button
                   onClick={() => setShowNewEmployeeForm(!showNewEmployeeForm)}
-                  className="bg-solar-purple text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-all font-semibold"
+                  className="flex items-center gap-2 bg-solar-purple text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-all font-semibold"
                 >
-                  {showNewEmployeeForm ? 'Cancelar' : '+ Adicionar Colaborador'}
+                  {showNewEmployeeForm ? (
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      Cancelar
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      Adicionar Colaborador
+                    </>
+                  )}
                 </button>
               </div>
 
@@ -725,8 +768,11 @@ const Admin: React.FC<AdminProps> = ({ onExitAdmin }) => {
                   </div>
                   <button
                     onClick={handleAddEmployee}
-                    className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition-all font-semibold"
+                    className="flex items-center gap-2 bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition-all font-semibold"
                   >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
                     Salvar Colaborador
                   </button>
                 </div>
@@ -751,14 +797,20 @@ const Admin: React.FC<AdminProps> = ({ onExitAdmin }) => {
                         <td className="px-4 py-3 text-right">
                           <button
                             onClick={() => setEditingEmployee(emp)}
-                            className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 mr-2"
+                            className="inline-flex items-center gap-1 bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 mr-2"
                           >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
                             Editar
                           </button>
                           <button
                             onClick={() => handleDeleteEmployee(emp.id!, emp.name)}
-                            className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                            className="inline-flex items-center gap-1 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
                           >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
                             Excluir
                           </button>
                         </td>
@@ -828,14 +880,20 @@ const Admin: React.FC<AdminProps> = ({ onExitAdmin }) => {
               <div className="flex gap-4 mt-6">
                 <button
                   onClick={() => handleSaveEdit(editingConfirmation)}
-                  className="flex-1 bg-green-500 text-white font-bold py-3 rounded-lg hover:bg-green-600 transition-all"
+                  className="flex-1 flex items-center justify-center gap-2 bg-green-500 text-white font-bold py-3 rounded-lg hover:bg-green-600 transition-all"
                 >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
                   Salvar Alterações
                 </button>
                 <button
                   onClick={() => setEditingConfirmation(null)}
-                  className="flex-1 bg-gray-300 text-gray-700 font-bold py-3 rounded-lg hover:bg-gray-400 transition-all"
+                  className="flex-1 flex items-center justify-center gap-2 bg-gray-300 text-gray-700 font-bold py-3 rounded-lg hover:bg-gray-400 transition-all"
                 >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                   Cancelar
                 </button>
               </div>
@@ -880,14 +938,20 @@ const Admin: React.FC<AdminProps> = ({ onExitAdmin }) => {
               <div className="flex gap-4 mt-6">
                 <button
                   onClick={() => handleEditEmployee(editingEmployee)}
-                  className="flex-1 bg-green-500 text-white font-bold py-3 rounded-lg hover:bg-green-600 transition-all"
+                  className="flex-1 flex items-center justify-center gap-2 bg-green-500 text-white font-bold py-3 rounded-lg hover:bg-green-600 transition-all"
                 >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
                   Salvar Alterações
                 </button>
                 <button
                   onClick={() => setEditingEmployee(null)}
-                  className="flex-1 bg-gray-300 text-gray-700 font-bold py-3 rounded-lg hover:bg-gray-400 transition-all"
+                  className="flex-1 flex items-center justify-center gap-2 bg-gray-300 text-gray-700 font-bold py-3 rounded-lg hover:bg-gray-400 transition-all"
                 >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                   Cancelar
                 </button>
               </div>

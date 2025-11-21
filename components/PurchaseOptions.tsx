@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { supabase, isSupabaseConfigured } from '../supabaseClient';
 
 const CheckIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-3 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -14,6 +15,8 @@ const PurchaseOptions: React.FC<PurchaseOptionsProps> = ({ showIntro }) => {
   const sectionRef = useRef<HTMLElement>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const TOTAL_BUS_SEATS = 46;
+  const [remainingSeats, setRemainingSeats] = useState(12);
 
   useEffect(() => {
     const observer = new IntersectionObserver(([entry]) => {
@@ -34,6 +37,22 @@ const PurchaseOptions: React.FC<PurchaseOptionsProps> = ({ showIntro }) => {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (isSupabaseConfigured()) {
+      const fetchSeats = async () => {
+        const { data, error } = await supabase
+          .from('confirmations')
+          .select('total_transport');
+        
+        if (!error && data) {
+          const totalTransportCount = data.reduce((sum, conf) => sum + (conf.total_transport || 0), 0);
+          setRemainingSeats(Math.max(0, TOTAL_BUS_SEATS - totalTransportCount));
+        }
+      };
+      fetchSeats();
+    }
+  }, [TOTAL_BUS_SEATS]);
 
   const handlePurchaseClick = (confirmed: boolean) => {
     if (!confirmed) {
@@ -68,14 +87,6 @@ const PurchaseOptions: React.FC<PurchaseOptionsProps> = ({ showIntro }) => {
           )}
           {!showIntro && (
               <div className="text-center mb-8 md:mb-12 animate-fadeInUp">
-                  <div className="inline-flex items-center gap-2 bg-amber-50 border-2 border-amber-400 text-amber-800 px-4 md:px-6 py-3 rounded-xl mb-4">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                    <span className="font-bold text-base md:text-lg">Atenção!</span>
-                  </div>
-                  <p className="text-gray-700 font-semibold text-base md:text-lg mb-2">Confirme sua presença primeiro para desbloquear as compras</p>
-                  <p className="text-sm md:text-base text-gray-600">Role para cima e clique em "QUERO PARTICIPAR!"</p>
               </div>
           )}
           <h2 className="text-3xl md:text-5xl lg:text-6xl font-black text-center mb-8 md:mb-12 uppercase bg-gradient-to-r from-orange-400 via-pink-500 to-pink-600 bg-clip-text text-transparent">Opcionais de Compra</h2>
@@ -109,7 +120,7 @@ const PurchaseOptions: React.FC<PurchaseOptionsProps> = ({ showIntro }) => {
                     : 'bg-gray-300 text-gray-500 cursor-pointer opacity-60 hover:opacity-80'
                 }`}
               >
-                {showIntro ? 'Comprar Diária' : '🔒 Bloqueado - Clique para saber mais'}
+                {showIntro ? 'Comprar Diária' : 'Confirme sua presença para liberar'}
               </button>
             </div>
 
@@ -122,6 +133,12 @@ const PurchaseOptions: React.FC<PurchaseOptionsProps> = ({ showIntro }) => {
               }`}
               style={{ transitionDelay: '150ms' }}
             >
+              {remainingSeats <= 20 && (
+                <div className="mb-4 inline-flex items-center gap-2 bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-400 text-red-700 px-3 md:px-4 py-2 rounded-lg font-semibold text-xs md:text-sm animate-pulse">
+                  <span className="text-base md:text-lg">⚠️</span>
+                  <span>Restam apenas {remainingSeats} vagas no transporte</span>
+                </div>
+              )}
               <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-4">Transfer de Ônibus</h3>
                <div className="mb-6">
                   <p className="text-3xl md:text-4xl font-black bg-gradient-to-r from-orange-500 to-pink-600 bg-clip-text text-transparent">12x R$6,53</p>
@@ -140,7 +157,7 @@ const PurchaseOptions: React.FC<PurchaseOptionsProps> = ({ showIntro }) => {
                     : 'bg-gray-300 text-gray-500 cursor-pointer opacity-60 hover:opacity-80'
                 }`}
               >
-                {showIntro ? 'Reservar Transfer' : '🔒 Bloqueado - Clique para saber mais'}
+                {showIntro ? 'Reservar Transfer' : 'Confirme sua presença para liberar'}
               </button>
             </div>
 

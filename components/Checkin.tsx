@@ -5,16 +5,16 @@ import { supabase, isSupabaseConfigured } from '../supabaseClient';
 declare var confetti: any;
 
 const confirmedAttendees = [
-  { initials: 'JS', fullName: 'João Silva', mood: '🎉' },
-  { initials: 'AM', fullName: 'Ana Martins', mood: '😎' },
-  { initials: 'CV', fullName: 'Carlos Vieira', mood: '🤩' },
-  { initials: 'LP', fullName: 'Luiza Pereira', mood: '🥳' },
-  { initials: 'RG', fullName: 'Ricardo Gomes', mood: '🚀' },
-  { initials: 'MS', fullName: 'Mariana Santos', mood: '🔥' },
-  { initials: 'TS', fullName: 'Thiago Souza', mood: '🕺' },
-  { initials: 'BC', fullName: 'Beatriz Costa', mood: '🎶' },
-  { initials: 'FG', fullName: 'Felipe Garcia', mood: '🌴' },
-  { initials: 'NA', fullName: 'Natália Alves', mood: '☀️' },
+  { initials: 'JS', fullName: 'João Silva', mood: '🎉', color: 'from-orange-400 to-orange-600' },
+  { initials: 'AM', fullName: 'Ana Martins', mood: '😎', color: 'from-pink-400 to-pink-600' },
+  { initials: 'CV', fullName: 'Carlos Vieira', mood: '🤩', color: 'from-rose-400 to-rose-600' },
+  { initials: 'LP', fullName: 'Luiza Pereira', mood: '🥳', color: 'from-orange-500 to-pink-500' },
+  { initials: 'RG', fullName: 'Ricardo Gomes', mood: '🚀', color: 'from-pink-500 to-pink-700' },
+  { initials: 'MS', fullName: 'Mariana Santos', mood: '🔥', color: 'from-orange-600 to-red-500' },
+  { initials: 'TS', fullName: 'Thiago Souza', mood: '🕺', color: 'from-pink-300 to-pink-500' },
+  { initials: 'BC', fullName: 'Beatriz Costa', mood: '🎶', color: 'from-orange-400 to-pink-400' },
+  { initials: 'FG', fullName: 'Felipe Garcia', mood: '🌴', color: 'from-rose-500 to-pink-600' },
+  { initials: 'NA', fullName: 'Natália Alves', mood: '☀️', color: 'from-orange-500 to-orange-700' },
 ];
 
 interface CheckinProps {
@@ -400,7 +400,7 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
           </div>
 
           {/* Título com Gradiente */}
-          <h2 className="text-4xl md:text-6xl lg:text-7xl font-black mb-4 md:mb-6 bg-gradient-to-r from-orange-400 via-pink-500 to-pink-600 bg-clip-text text-transparent leading-tight px-4">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-4 md:mb-6 bg-gradient-to-r from-orange-400 via-pink-500 to-pink-600 bg-clip-text text-transparent leading-tight px-2 tracking-tight">
             CONFIRME SUA PRESENÇA
           </h2>
 
@@ -410,12 +410,14 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
           </p>
 
           {/* Botão Quero Participar */}
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-black text-xl md:text-2xl py-4 md:py-5 px-8 md:px-12 rounded-2xl shadow-2xl transition-all transform hover:scale-105 mb-6 uppercase"
-          >
-            QUERO PARTICIPAR!
-          </button>
+          <div className="flex justify-center mb-6">
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-black text-xl md:text-2xl py-4 md:py-5 px-8 md:px-12 rounded-2xl shadow-2xl transition-all transform hover:scale-105 uppercase"
+            >
+              QUERO PARTICIPAR!
+            </button>
+          </div>
 
           {/* Aviso de Vagas */}
           {remainingSeats < 20 && (
@@ -445,24 +447,40 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
             Veja quem já confirmou
           </h3>
 
-          {/* Círculos de Confirmados */}
-          <div className="flex flex-wrap justify-center gap-3 md:gap-4 mb-8">
-            {confirmedAttendees.map((person, idx) => (
-              <div
-                key={idx}
-                className="relative group"
-              >
-                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-pink-400 to-pink-600 text-white font-black flex items-center justify-center text-lg md:text-xl shadow-lg transform transition-all hover:scale-110">
-                  {person.initials}
-                  <div className="absolute -top-1 -right-1 text-2xl md:text-3xl">
+          {/* Carousel de Confirmados com Animação */}
+          <style>{`
+            @keyframes scroll-carousel {
+              0% {
+                transform: translateX(0);
+              }
+              100% {
+                transform: translateX(-50%);
+              }
+            }
+            .carousel-scroll {
+              animation: scroll-carousel 30s linear infinite;
+            }
+            .carousel-scroll:hover {
+              animation-play-state: paused;
+            }
+          `}</style>
+          
+          <div className="relative overflow-hidden mb-8">
+            <div className="flex carousel-scroll">
+              {[...confirmedAttendees, ...confirmedAttendees].map((person, idx) => (
+                <div
+                  key={idx}
+                  className="flex-shrink-0 flex flex-col items-center mx-3 md:mx-4"
+                >
+                  <div className={`w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br ${person.color} text-white font-black flex items-center justify-center text-4xl md:text-5xl shadow-lg transform transition-all hover:scale-110`}>
                     {person.mood}
                   </div>
+                  <p className="mt-3 text-sm md:text-base font-bold text-gray-800 text-center max-w-[100px]">
+                    {person.fullName}
+                  </p>
                 </div>
-                <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-20">
-                  {person.fullName}
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
 
