@@ -15,8 +15,8 @@ Foi implementado um sistema de segurança que impede confirmações duplicadas. 
 - No menu lateral esquerdo, clique em **SQL Editor**
 - Clique em **+ New query**
 
-### 3. Execute o Script
-- Abra o arquivo `ADD_EMPLOYEE_ID_TO_CONFIRMATIONS.sql` que está na raiz deste projeto
+### 3. Execute o Script CORRIGIDO
+- Abra o arquivo `ADD_EMPLOYEE_ID_CORRIGIDO.sql` que está na raiz deste projeto
 - **Copie TODO o conteúdo** do arquivo
 - **Cole** no editor SQL do Supabase
 - Clique no botão **Run** (ou pressione Ctrl+Enter)
