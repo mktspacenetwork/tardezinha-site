@@ -9,11 +9,12 @@ This is a React + TypeScript event management application for "Tardezinha da Spa
 - **Event Date Consistency Fix**: Synchronized both countdown timers (Countdown.tsx and Checkin.tsx) to use the same event date: December 21, 2025 at 12:00 PM
 - **Footer Date Correction**: Fixed day of week from "Sábado" to "Domingo" (December 21, 2025 is a Sunday, not Saturday)
 - **Database Schema Complete Fix**: 
-  - Added `employee_id` column to confirmations table with foreign key relationship to employees table
-  - Verified all columns match between code and database schema
-  - Tested insertion successfully with all required fields
+  - Recreated `confirmations` table with all required columns including employee_id
+  - Fixed PostgREST schema cache issue by executing FORCAR_RELOAD_SCHEMA.sql directly in Supabase Dashboard
+  - Verified all columns match between code and database schema (employee_id, employee_name, employee_rg, department, etc.)
+  - Disabled RLS for easier development testing
 - **Bus Capacity Fix**: Changed initial remainingSeats from hardcoded 12 to 90, making it properly dynamic based on real confirmations
-- **Full System Testing**: Validated complete confirmation flow works without errors
+- **Full System Testing**: Complete confirmation flow now works without schema cache errors
 
 ## Previous Changes (November 20, 2025)
 - **Supabase Configuration Fix**: Fixed critical bug - changed from `process.env` to `import.meta.env.VITE_*` for proper Vite environment variable access
