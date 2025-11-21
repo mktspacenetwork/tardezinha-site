@@ -90,7 +90,7 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
   }, []);
   
   useEffect(() => {
-    const deadline = new Date('2025-12-15T23:59:59');
+    const deadline = new Date('2025-12-21T12:00:00');
     const today = new Date();
     const diffTime = Math.max(0, deadline.getTime() - today.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
