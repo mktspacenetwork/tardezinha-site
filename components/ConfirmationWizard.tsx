@@ -37,11 +37,14 @@ interface ConfirmationWizardProps {
 const ConfirmationWizard: React.FC<ConfirmationWizardProps> = ({
   onClose,
   onSuccess,
-  isEditMode = false,
-  editingConfirmationId = null,
+  isEditMode: initialEditMode = false,
+  editingConfirmationId: initialEditingId = null,
   existingData,
 }) => {
   const [currentStep, setCurrentStep] = useState(1);
+  const [isEditMode, setIsEditMode] = useState(initialEditMode);
+  const [editingConfirmationId, setEditingConfirmationId] = useState<number | null>(initialEditingId);
+  
   const [wizardData, setWizardData] = useState<WizardData>({
     employee: existingData?.employee || null,
     employeeRG: existingData?.employeeRG || '',
@@ -63,23 +66,16 @@ const ConfirmationWizard: React.FC<ConfirmationWizardProps> = ({
     },
   });
 
-  // Duplicate detection modals
-  const [showDuplicateModal, setShowDuplicateModal] = useState(false);
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [existingConfirmation, setExistingConfirmation] = useState<any>(null);
-  const [passwordInput, setPasswordInput] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-
   const updateWizardData = (updates: Partial<WizardData>) => {
     setWizardData(prev => {
       const updated = { ...prev, ...updates };
       
       // Recalculate costs when companions or transport changes
-      if (updates.companions || updates.wantsTransport !== undefined || updates.childrenOnLap) {
+      if (updates.companions !== undefined || updates.wantsTransport !== undefined || updates.childrenOnLap !== undefined) {
         const costs = calculateCosts(
           updated.companions,
           updated.wantsTransport || false,
-          updated.childrenOnLap
+          updated.childrenOnLap || []
         );
         updated.costs = costs;
         updated.transportSeatsNeeded = costs.breakdown.transportSeats;
@@ -102,61 +98,43 @@ const ConfirmationWizard: React.FC<ConfirmationWizardProps> = ({
   };
 
   const handleDuplicateFound = (employee: Employee, existing: any) => {
-    setExistingConfirmation(existing);
-    setShowDuplicateModal(true);
-  };
-
-  const handleRequestEdit = () => {
-    setShowDuplicateModal(false);
-    setShowPasswordModal(true);
-  };
-
-  const handleCancelDuplicate = () => {
-    setShowDuplicateModal(false);
-    setExistingConfirmation(null);
-  };
-
-  const handlePasswordValidation = () => {
-    if (!existingConfirmation || !wizardData.employee) {
-      setPasswordError('Erro na validação');
-      return;
-    }
-
-    // Validate using FULL RG
-    const correctPassword = existingConfirmation.employee_rg;
-    if (passwordInput.trim() === correctPassword.trim()) {
-      // Load existing data and enter edit mode
-      const existingWizardData: Partial<WizardData> = {
-        employee: wizardData.employee,
-        employeeRG: existingConfirmation.employee_rg,
-        attending: true,
-        companions: existingConfirmation.companions || [],
-        wantsTransport: existingConfirmation.wants_transport,
-        childrenOnLap: [],
-      };
-
-      setWizardData(prev => ({
-        ...prev,
-        ...existingWizardData,
-      }));
-
-      // Close password modal and continue wizard in edit mode
-      setShowPasswordModal(false);
-      setPasswordInput('');
-      setPasswordError('');
+    console.log('Loading existing confirmation for edit mode:', existing);
+    
+    // Enter edit mode
+    setIsEditMode(true);
+    setEditingConfirmationId(existing.id);
+    
+    // Load existing data into wizard
+    const companions = existing.companions || [];
+    const wantsTransport = existing.wants_transport || false;
+    
+    // Update wizard data with existing confirmation
+    const loadedData: Partial<WizardData> = {
+      employee: employee,
+      employeeRG: existing.employee_rg || '',
+      attending: true,
+      companions: companions,
+      wantsTransport: wantsTransport,
+      childrenOnLap: [], // Reset lap selections for edit mode
+    };
+    
+    // Use updateWizardData to trigger cost recalculation
+    setWizardData(prev => {
+      const updated = { ...prev, ...loadedData };
       
-      // Continue to next step
-      nextStep();
-    } else {
-      setPasswordError('RG incorreto. Tente novamente.');
-    }
-  };
-
-  const handleCancelPassword = () => {
-    setShowPasswordModal(false);
-    setPasswordInput('');
-    setPasswordError('');
-    setExistingConfirmation(null);
+      // Recalculate costs with loaded data
+      const costs = calculateCosts(
+        updated.companions,
+        updated.wantsTransport || false,
+        updated.childrenOnLap || []
+      );
+      updated.costs = costs;
+      updated.transportSeatsNeeded = costs.breakdown.transportSeats;
+      
+      return updated;
+    });
+    
+    console.log('Edit mode activated with loaded data');
   };
 
   const handleDeclineAttendance = () => {
@@ -211,6 +189,18 @@ const ConfirmationWizard: React.FC<ConfirmationWizardProps> = ({
                 Passo {currentStep}/6
               </span>
             </div>
+            
+            {/* Edit mode indicator */}
+            {isEditMode && (
+              <div className="mt-3 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+                <p className="text-sm text-blue-700 font-medium flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                  </svg>
+                  Modo de Edição - Atualizando sua confirmação existente
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Step Content */}
@@ -254,94 +244,6 @@ const ConfirmationWizard: React.FC<ConfirmationWizardProps> = ({
           )}
         </div>
       </div>
-
-      {/* Duplicate Confirmation Modal */}
-      {showDuplicateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[60] p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
-            <div className="text-center mb-6">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-yellow-100 rounded-full mb-4">
-                <svg className="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-2">
-                Confirmação Existente
-              </h3>
-              <p className="text-gray-600">
-                Você já realizou suas confirmações. Deseja editar?
-              </p>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={handleCancelDuplicate}
-                className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-100 transition-all"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleRequestEdit}
-                className="flex-1 px-4 py-3 bg-gradient-to-r from-orange-500 to-pink-500 text-white font-bold rounded-xl hover:shadow-lg transition-all"
-              >
-                Editar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Password Modal */}
-      {showPasswordModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[60] p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
-            <div className="text-center mb-6">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
-                <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-2">
-                Validação de Segurança
-              </h3>
-              <p className="text-gray-600 text-sm">
-                Digite seu RG completo para editar sua confirmação
-              </p>
-            </div>
-
-            <div className="mb-4">
-              <input
-                type="text"
-                value={passwordInput}
-                onChange={(e) => {
-                  setPasswordInput(e.target.value);
-                  setPasswordError('');
-                }}
-                placeholder="Digite seu RG"
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-orange-500 focus:ring-4 focus:ring-orange-100 transition-all"
-              />
-              {passwordError && (
-                <p className="text-red-600 text-sm mt-2">{passwordError}</p>
-              )}
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={handleCancelPassword}
-                className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-100 transition-all"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handlePasswordValidation}
-                className="flex-1 px-4 py-3 bg-gradient-to-r from-orange-500 to-pink-500 text-white font-bold rounded-xl hover:shadow-lg transition-all"
-              >
-                Validar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </WizardContext.Provider>
   );
 };
