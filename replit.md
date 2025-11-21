@@ -10,6 +10,8 @@ This is a React + TypeScript event management application for "Tardezinha da Spa
 - **Footer Date Correction**: Fixed day of week from "Sábado" to "Domingo" (December 21, 2025 is a Sunday, not Saturday)
 - **Database Column Addition**: Added `employee_id` column to confirmations table with foreign key relationship to employees table for duplicate prevention system
 - **SQL Script Fix**: Created corrected SQL script (ADD_EMPLOYEE_ID_CORRIGIDO.sql) that avoids errors from non-existent columns
+- **Bus Capacity Fix**: Changed initial remainingSeats from hardcoded 12 to 90, making it properly dynamic based on real confirmations
+- **Department Column Fix**: Removed `department` field from confirmation object to fix database schema error
 
 ## Previous Changes (November 20, 2025)
 - **Supabase Configuration Fix**: Fixed critical bug - changed from `process.env` to `import.meta.env.VITE_*` for proper Vite environment variable access

@@ -379,7 +379,6 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
         employee_id: selectedEmployee.id,
         employee_name: selectedEmployee.name,
         employee_rg: employeeRG,
-        department: selectedEmployee.department,
         has_companions: hasCompanions,
         wants_transport: wantsTransport || false,
         total_adults: adults.length,
