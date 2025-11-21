@@ -238,6 +238,7 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
     setShowSuggestions(false);
 
     if (employee.id) {
+      // Check for duplicate - modal will overlay on top of main modal
       await checkExistingConfirmation(employee.id);
     }
   };
@@ -264,6 +265,8 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
     if (existingRGFirst5 === inputFirst5) {
       setShowPasswordModal(false);
       await loadExistingConfirmationData();
+      // Reopen main modal in edit mode
+      setIsModalOpen(true);
     } else {
       setPasswordError('Documento incorreto. Verifique os 5 primeiros caracteres.');
     }
@@ -296,6 +299,7 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
     setExistingConfirmation(null);
     setSelectedEmployee(null);
     setName('');
+    // Keep main modal open so user can select different employee
   };
 
   const handleCancelPassword = () => {
@@ -305,6 +309,7 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
     setExistingConfirmation(null);
     setSelectedEmployee(null);
     setName('');
+    // Keep main modal open so user can select different employee
   };
 
   const addAdult = () => {
@@ -1067,7 +1072,7 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
                 {/* Botão de Enviar */}
                 <button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || showDuplicateModal || showPasswordModal}
                   className="w-full bg-gradient-to-r from-pink-500 via-pink-600 to-orange-500 text-white font-black py-4 md:py-5 px-8 rounded-2xl text-lg md:text-xl hover:shadow-2xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none uppercase"
                 >
                   {isSubmitting ? (isEditMode ? 'Atualizando...' : 'Confirmando...') : (isEditMode ? 'Atualizar Confirmação ✏️' : 'Confirmar Presença 🎉')}
