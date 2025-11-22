@@ -9,6 +9,7 @@ const images = [
     { src: 'https://raw.githubusercontent.com/mktspacenetwork/tardezinha/main/carol.jpg', alt: 'Convidada posando para foto' },
     { src: 'https://raw.githubusercontent.com/mktspacenetwork/tardezinha/main/donazefa.jpg', alt: 'Convidada sorrindo durante o evento' },
     { src: 'https://raw.githubusercontent.com/mktspacenetwork/tardezinha/main/daniel.jpg', alt: 'Convidado na Tardezinha da Space' },
+    { src: '/piscina_tardezina.jpeg', alt: 'Piscina da Tardezinha da Space' },
 ];
 
 // Classes for the mosaic layout
@@ -20,6 +21,7 @@ const imageSpans = [
   'md:col-span-2 md:row-span-1', // Image 5 (wide)
   'md:col-span-1 md:row-span-2', // Image 6 (tall)
   'md:col-span-1 md:row-span-1', // Image 7 (small)
+  'md:col-span-2 md:row-span-1', // Image 8 (wide - new)
 ];
 
 const Gallery: React.FC = () => {

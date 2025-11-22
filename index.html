@@ -52,6 +52,8 @@
                 'kenburns-2': 'kenburns-2 15s ease-out forwards',
                 'kenburns-3': 'kenburns-3 15s ease-out forwards',
                 marquee: 'marquee 40s linear infinite',
+                'pulse-zoom': 'pulse-zoom 2s ease-in-out infinite',
+                'scroll-infinite': 'scroll-infinite 30s linear infinite',
             },
             keyframes: {
                 fadeIn: {
@@ -75,6 +77,14 @@
                     '100%': { transform: 'scale(1.15) translate(0, 0)' },
                 },
                 marquee: {
+                  '0%': { transform: 'translateX(0)' },
+                  '100%': { transform: 'translateX(-50%)' },
+                },
+                'pulse-zoom': {
+                  '0%, 100%': { transform: 'scale(1)' },
+                  '50%': { transform: 'scale(1.05)' },
+                },
+                'scroll-infinite': {
                   '0%': { transform: 'translateX(0)' },
                   '100%': { transform: 'translateX(-50%)' },
                 },

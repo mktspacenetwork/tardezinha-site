@@ -66,8 +66,9 @@ const PurchaseOptions: React.FC<PurchaseOptionsProps> = ({ showIntro }) => {
     
     setIsModalOpen(true);
     setTimeout(() => {
-      window.location.href = 'https://useingresso.com/evento/691b30d3dc465aca63b2bbef';
-    }, 5000);
+      window.open('https://useingresso.com/evento/691b30d3dc465aca63b2bbef', '_blank');
+      setIsModalOpen(false);
+    }, 3000);
   };
 
   return (
@@ -89,9 +90,35 @@ const PurchaseOptions: React.FC<PurchaseOptionsProps> = ({ showIntro }) => {
               <div className="text-center mb-8 md:mb-12 animate-fadeInUp">
               </div>
           )}
-          <h2 className="text-3xl md:text-5xl lg:text-6xl font-black text-center mb-8 md:mb-12 uppercase bg-gradient-to-r from-orange-400 via-pink-500 to-pink-600 bg-clip-text text-transparent">Opcionais de Compra</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <h2 className="text-3xl md:text-5xl lg:text-6xl font-black text-center mb-8 md:mb-12 uppercase bg-gradient-to-r from-orange-400 via-pink-500 to-pink-600 bg-clip-text text-transparent">Não perca esse dia incrível!</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             
+            {/* Employee Free Card */}
+            <div
+              className={`bg-gradient-to-br from-green-50 to-emerald-50 border-4 border-green-400 rounded-2xl p-6 md:p-8 text-left flex flex-col shadow-lg transition-all duration-300 ease-out ${
+                isVisible
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 translate-y-10'
+              }`}
+            >
+              <div className="mb-4 text-center">
+                <span className="bg-green-500 text-white px-4 py-2 rounded-full text-xs font-bold uppercase">
+                  Colaborador
+                </span>
+              </div>
+              <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-4 text-center">Diária Colaborador</h3>
+              <div className="mb-6 text-center">
+                <p className="text-4xl md:text-5xl font-black text-green-600">R$ 0,00</p>
+                <p className="text-lg font-bold text-green-700 mt-2">GRÁTIS</p>
+              </div>
+              <ul className="text-gray-700 space-y-2 md:space-y-3 mb-6 flex-grow text-sm md:text-base">
+                <li className="flex items-center"><CheckIcon /> Diária do sítio + Piscina</li>
+                <li className="flex items-center"><CheckIcon /> Open Chopp + Bebidas</li>
+                <li className="flex items-center"><CheckIcon /> Almoço a vontade</li>
+                <li className="flex items-center"><CheckIcon /> Brindes Exclusivos</li>
+              </ul>
+            </div>
+
             {/* Guest Ticket Card */}
             <div
               className={`bg-gradient-to-br from-white to-gray-50 border-2 ${showIntro ? 'border-pink-200' : 'border-gray-200'} rounded-2xl p-6 md:p-8 text-left flex flex-col shadow-lg hover:shadow-2xl transition-all duration-300 ease-out ${

@@ -28,6 +28,7 @@ const Admin: React.FC<AdminProps> = ({ onExitAdmin }) => {
   const [filterDepartment, setFilterDepartment] = useState('');
   const [filterTransport, setFilterTransport] = useState<boolean | null>(null);
   const [dbError, setDbError] = useState('');
+  const TOTAL_BUS_SEATS = 90;
 
   // Modal states
   const [editingConfirmation, setEditingConfirmation] = useState<(Confirmation & { companions?: Companion[] }) | null>(null);
@@ -389,7 +390,7 @@ const Admin: React.FC<AdminProps> = ({ onExitAdmin }) => {
                   </div>
                 </div>
                 <div className="text-3xl font-bold text-slate-800">{stats.totalConfirmed}</div>
-                <div className="text-sm text-slate-500 mt-1">Confirmações</div>
+                <div className="text-sm text-slate-500 mt-1">Colaboradores Confirmados</div>
               </div>
               <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between mb-3">
@@ -417,23 +418,53 @@ const Admin: React.FC<AdminProps> = ({ onExitAdmin }) => {
                 <div className="flex items-center justify-between mb-3">
                   <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
                     <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="text-3xl font-bold text-slate-800">{stats.totalDailyPasses}</div>
-                <div className="text-sm text-slate-500 mt-1">Diárias Necessárias</div>
-              </div>
-              <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-12 h-12 bg-rose-100 rounded-lg flex items-center justify-center">
-                    <svg className="w-6 h-6 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                     </svg>
                   </div>
                 </div>
                 <div className="text-3xl font-bold text-slate-800">{stats.totalTransport}</div>
-                <div className="text-sm text-slate-500 mt-1">Vagas de Ônibus</div>
+                <div className="text-sm text-slate-500 mt-1">Assentos de Ônibus Ocupados</div>
+              </div>
+              <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="text-3xl font-bold text-slate-800">{TOTAL_BUS_SEATS - stats.totalTransport}</div>
+                <div className="text-sm text-slate-500 mt-1">Vagas de Ônibus Disponíveis</div>
+              </div>
+            </div>
+
+            {/* Simplified Confirmations List */}
+            <div className="bg-white rounded-xl shadow-lg p-6">
+              <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                Colaboradores Confirmados
+              </h3>
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {confirmations.map((conf, index) => (
+                  <div key={conf.id} className="flex items-center justify-between py-2 px-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors">
+                    <span className="text-sm font-medium text-slate-700">
+                      {index + 1}. {conf.employee_name}
+                    </span>
+                    <div className="flex items-center gap-3 text-xs text-slate-500">
+                      <span>{conf.department}</span>
+                      {conf.wants_transport && (
+                        <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded">🚌 Transporte</span>
+                      )}
+                      {(conf.total_adults > 0 || conf.total_children > 0) && (
+                        <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded">
+                          +{conf.total_adults + conf.total_children}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -478,6 +509,18 @@ const Admin: React.FC<AdminProps> = ({ onExitAdmin }) => {
         {activeTab === 'confirmations' && (
           <div className="space-y-4">
             <div className="bg-white rounded-xl shadow-lg p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold">Confirmações</h3>
+                <button
+                  onClick={handleExport}
+                  className="flex items-center gap-2 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-all font-semibold text-sm"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Exportar CSV
+                </button>
+              </div>
               <div className="flex flex-col md:flex-row gap-4 mb-4">
                 <input
                   type="text"
@@ -601,75 +644,162 @@ const Admin: React.FC<AdminProps> = ({ onExitAdmin }) => {
 
         {/* Bus Management Tab */}
         {activeTab === 'bus' && (
-          <div className="space-y-4">
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h3 className="text-xl font-bold mb-4">Controle de Embarque - Ônibus</h3>
-              <div className="text-lg mb-4">
-                Total de passageiros: <span className="font-bold">{stats.totalTransport}</span>
+          <div className="space-y-6">
+            {/* Stats Counters */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="text-3xl font-bold text-slate-800">{stats.totalTransport}</div>
+                <div className="text-sm text-slate-500 mt-1">Lugares Confirmados</div>
+              </div>
+              <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="text-3xl font-bold text-slate-800">{busConfirmations.filter(c => c.embarked).length}</div>
+                <div className="text-sm text-slate-500 mt-1">Embarcados</div>
+              </div>
+              <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="text-3xl font-bold text-slate-800">{busConfirmations.filter(c => !c.embarked).length}</div>
+                <div className="text-sm text-slate-500 mt-1">Faltam Embarcar</div>
               </div>
             </div>
 
-            <div className="space-y-4">
-              {busConfirmations.map((conf) => (
-                <div
-                  key={conf.id}
-                  className={`bg-white rounded-xl shadow-lg p-6 border-l-4 ${
-                    conf.embarked ? 'border-green-500' : 'border-yellow-500'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-xl font-bold">{conf.employee_name}</h3>
-                        {conf.embarked && <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold">EMBARCADO</span>}
-                      </div>
-                      <p className="text-gray-600 mb-2">
-                        {conf.department} | RG: {conf.employee_rg}
-                      </p>
-                      <div className="flex gap-6 text-sm">
-                        <div>
-                          <span className="text-gray-600">Passageiros:</span>{' '}
-                          <span className="font-semibold">{conf.total_transport}</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-600">Adultos:</span>{' '}
-                          <span className="font-semibold">{conf.total_adults + 1}</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-600">Crianças:</span>{' '}
-                          <span className="font-semibold">{conf.total_children}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => handleToggleEmbarked(conf.id!, conf.embarked || false)}
-                      className={`px-6 py-3 rounded-lg font-bold transition-all ${
-                        conf.embarked
-                          ? 'bg-gray-300 text-gray-700 hover:bg-gray-400'
-                          : 'bg-green-500 text-white hover:bg-green-600'
-                      }`}
-                    >
-                      {conf.embarked ? 'Desmarcar Embarque' : 'Marcar como Embarcado'}
-                    </button>
-                  </div>
-
-                  {conf.companions && conf.companions.length > 0 && (
-                    <div className="mt-4 border-t pt-4">
-                      <h4 className="font-semibold mb-2 text-gray-700">Acompanhantes:</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {conf.companions.map((comp, idx) => (
-                          <div key={idx} className="bg-gray-100 px-3 py-1 rounded-lg text-sm">
-                            {comp.name} ({comp.age} anos)
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+            {/* Export Buttons */}
+            <div className="bg-white rounded-xl shadow-lg p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold">Lista de Passageiros</h3>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      const headers = 'Nome,RG,Tipo,Idade,Colo/Assento,Embarcado\n';
+                      let rows: string[] = [];
+                      busConfirmations.forEach(conf => {
+                        rows.push(`"${conf.employee_name}","${conf.employee_rg}","COLABORADOR","","",${conf.embarked ? 'SIM' : 'NÃO'}`);
+                        (conf.companions || []).forEach(comp => {
+                          const childInfo = comp.age <= 12 ? `${comp.age} anos` : '';
+                          const seatType = comp.age <= 5 ? 'COLO/ASSENTO' : 'ASSENTO';
+                          rows.push(`"${comp.name}","${comp.document}","${comp.type === 'adult' ? 'ACOMPANHANTE' : 'CRIANÇA'}","${childInfo}","${seatType}",${conf.embarked ? 'SIM' : 'NÃO'}`);
+                        });
+                      });
+                      const blob = new Blob([headers + rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+                      const link = document.createElement('a');
+                      link.href = URL.createObjectURL(blob);
+                      link.download = 'gestao_onibus.csv';
+                      link.click();
+                    }}
+                    className="flex items-center gap-2 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-all font-semibold text-sm"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    CSV
+                  </button>
                 </div>
-              ))}
+              </div>
+            </div>
 
+            {/* Passengers List */}
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-slate-100 border-b border-slate-200">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Nome</th>
+                      <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">RG</th>
+                      <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Tipo</th>
+                      <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Info</th>
+                      <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Embarque</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {busConfirmations.map((conf) => (
+                      <React.Fragment key={conf.id}>
+                        <tr className={conf.embarked ? 'bg-green-50' : 'bg-white'}>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div>
+                                <div className="text-sm font-medium text-slate-900">{conf.employee_name}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{conf.employee_rg}</td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                              COLABORADOR
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">-</td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <button
+                              onClick={() => handleToggleEmbarked(conf.id!, conf.embarked || false)}
+                              className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
+                                conf.embarked
+                                  ? 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                                  : 'bg-green-500 text-white hover:bg-green-600'
+                              }`}
+                            >
+                              {conf.embarked ? '✓ Embarcado' : 'Marcar'}
+                            </button>
+                          </td>
+                        </tr>
+                        {(conf.companions || []).map((comp, idx) => (
+                          <tr key={`${conf.id}-${idx}`} className={conf.embarked ? 'bg-green-50' : 'bg-white'}>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center pl-4">
+                                <div>
+                                  <div className="text-sm font-medium text-slate-900">{comp.name}</div>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{comp.document}</td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                comp.type === 'adult'
+                                  ? 'bg-purple-100 text-purple-800'
+                                  : 'bg-pink-100 text-pink-800'
+                              }`}>
+                                {comp.type === 'adult' ? 'ACOMPANHANTE' : 'CRIANÇA'}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                              {comp.age <= 12 && (
+                                <span className="flex items-center gap-1">
+                                  {comp.age <= 5 && <span className="text-lg">👶</span>}
+                                  {comp.age} anos
+                                  {comp.age <= 5 && <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Colo/Assento</span>}
+                                </span>
+                              )}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                              {conf.embarked && <span className="text-green-600 font-semibold">✓ Embarcado</span>}
+                            </td>
+                          </tr>
+                        ))}
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
               {busConfirmations.length === 0 && (
-                <div className="bg-white rounded-xl shadow-lg p-12 text-center text-gray-500">
+                <div className="p-12 text-center text-gray-500">
                   Nenhum passageiro confirmado para o ônibus.
                 </div>
               )}

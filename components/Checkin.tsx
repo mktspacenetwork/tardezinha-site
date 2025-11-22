@@ -131,8 +131,8 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
         {/* Header */}
         <div className="text-center mb-12">
           <div className="inline-block mb-4">
-            <span className="bg-gradient-to-r from-orange-500 to-pink-500 text-white px-6 py-2 rounded-full text-sm font-bold uppercase tracking-wider shadow-lg">
-              100% GRÁTIS
+            <span className="bg-green-500 text-white px-6 py-3 rounded-lg text-base font-black uppercase tracking-wider shadow-lg transform -rotate-2 inline-block animate-pulse-zoom">
+              COLABORADOR<br />100% GRÁTIS
             </span>
           </div>
           <h2 className="text-4xl md:text-6xl font-black mb-6 leading-tight">
@@ -144,24 +144,6 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
             Não perca a melhor festa do ano! Sua entrada é <strong>100% gratuita</strong>.
             Você só paga se levar acompanhantes ou quiser transporte.
           </p>
-        </div>
-
-        {/* Countdown Timer */}
-        <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 mb-12 border-4 border-orange-200">
-          <div className="text-center">
-            <h3 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">
-              Faltam apenas
-            </h3>
-            <div className="inline-flex items-center justify-center w-32 h-32 bg-gradient-to-r from-orange-500 to-pink-500 rounded-full mb-6">
-              <span className="text-6xl font-black text-white">{remainingDays}</span>
-            </div>
-            <p className="text-xl md:text-2xl font-semibold text-gray-700">
-              {remainingDays === 1 ? 'dia' : 'dias'} para a Tardezinha da Space!
-            </p>
-            <p className="text-gray-600 mt-4">
-              <strong>21 de Dezembro de 2025</strong> (Domingo) · 14h00
-            </p>
-          </div>
         </div>
 
         {/* CTA Button */}
@@ -182,52 +164,34 @@ const Checkin: React.FC<CheckinProps> = ({ onConfirm, onOpenRules }) => {
           </button>
         </div>
 
-        {/* Warning about transport */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-2xl p-6 mb-12">
-          <div className="flex items-start gap-4">
-            <div className="flex-shrink-0">
-              <svg className="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
-                <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1v-5a1 1 0 00-.293-.707l-2-2A1 1 0 0015 7h-1z" />
-              </svg>
-            </div>
-            <div className="flex-1">
-              <h4 className="font-bold text-gray-800 text-lg mb-2">
-                Transporte disponível
-              </h4>
-              <p className="text-gray-700 mb-2">
-                Temos <strong className="text-blue-600">{remainingSeats} vagas</strong> disponíveis no ônibus!
-              </p>
-              <p className="text-sm text-gray-600">
-                💰 Valor: R$ 64,19 à vista ou 12x R$ 6,53 por pessoa
-              </p>
-            </div>
-          </div>
-        </div>
-
         {/* Confirmed Attendees Carousel */}
         {confirmedAttendees.length > 0 && (
-          <div className="bg-white rounded-3xl shadow-xl p-8 mb-12">
+          <div className="bg-white rounded-3xl shadow-xl p-8 mb-12 overflow-hidden">
             <h3 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6 text-center">
               Quem já confirmou presença
             </h3>
-            <div className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide">
-              {confirmedAttendees.map((attendee, index) => (
-                <div
-                  key={index}
-                  className="flex-shrink-0 group"
-                  title={attendee.fullName}
-                >
-                  <div className={`w-16 h-16 bg-gradient-to-r ${attendee.color} rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg group-hover:scale-110 transition-transform cursor-pointer`}>
-                    {attendee.initials}
-                  </div>
-                  <div className="text-center mt-2 text-2xl">{attendee.mood}</div>
-                </div>
-              ))}
+            <div className="relative">
+              <div className="flex gap-6 animate-scroll-infinite">
+                {[...confirmedAttendees, ...confirmedAttendees].map((attendee, index) => {
+                  const nameParts = attendee.fullName.split(' ');
+                  const firstName = nameParts[0];
+                  return (
+                    <div
+                      key={index}
+                      className="flex-shrink-0 flex flex-col items-center"
+                      style={{ minWidth: '80px' }}
+                    >
+                      <div className={`w-16 h-16 bg-gradient-to-r ${attendee.color} rounded-full flex items-center justify-center shadow-lg`}>
+                        <span className="text-3xl">😎</span>
+                      </div>
+                      <p className="text-center mt-2 text-sm font-semibold text-gray-700 max-w-[80px] truncate">
+                        {firstName}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-            <p className="text-center text-gray-600 mt-4 font-semibold">
-              {confirmedAttendees.length} {confirmedAttendees.length === 1 ? 'pessoa confirmada' : 'pessoas confirmadas'}
-            </p>
           </div>
         )}
       </div>

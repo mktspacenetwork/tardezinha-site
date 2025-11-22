@@ -1,0 +1,90 @@
+
+Na sessão O QUE TE ESPERA
+adicione um box com as informações:
+SUPER BRINDES EXCLUSIVOS
+Marcou presença na tardezinha, leva pra casa vários brindes incríveis.
+foto de fundo: https://github.com/mktspacenetwork/tardezinha/blob/main/brindes.jpg
+
+Nessa mesma sessão, gostaria que ao passar o mouse tivesse um botão de curtie com coração e uma contagem. Gostaria que contabilizasse as curtidas das pessoas, apenas isso.
+_____
+
+Na sessão de fotos VEJA COMO FOI INCRÍVEl
+Adicione essa foto, mas mantenha o formato atual da galeria.
+https://github.com/mktspacenetwork/tardezinha/blob/main/piscina_tardezina.jpeg
+
+_______
+
+Faça isso:
+- Botão 100% GRATIS tem que ser
+COLABORADOR
+100% GRÁTIS
+E deve ser verde, inclinado e ter um movimento de zoom piscando sutil.
+
+___________
+
+Remova na sessão confirme sua presença, remova o box com a contagem regressiva localizado acima do botão de "QUERO PARTICIPAR"
+
+REmova também o box de contagem de transporte disponível qye está abaixo do botão QUERO PARTICIPAR.
+
+__________
+
+No campo de: Quem já confirmou presença.
+Faça o emoji https://fontawesome.com/icons/face-sunglasses?f=classic&s=light ou similar ficar dentro da bolinha. E o primeiro nome do colaborador confirmado abaixo.
+
+As bolinhas devem deslizar lentamente da direita pra esquerda e se repetem de forma infinita.
+
+Remova a informação do total de pessoas confirmadas
+
+________
+
+OPCIONAIS DE COMPRA deve virar NÃO PERCA ESSE DIA INCRÍVEL!
+
+Nos dois boxes de Diaria Acompanhante e transfer de onibus remova os botões de dentro do box.
+Adicione um box em primeiro lugar a esquerda com as informações
+
+Diária Colaborador.
+R$0,00
+GRÁTIS
+- Diária do sítio + Piscina
+- Open Chopp + Bebidas
+- Almoço a vontade
+- Brindes Exclusivos.
+
+_________________
+
+No Dashboar Admin
+
+Mantenha os seguintes dados.
+- Colaboradores confirmados
+- Acompanhantes Adultos
+- Crianças
+- Assentos de Ônibus ocupados
+- Vagas de onibus disponíveis
+
+Embaixo,  mostra a lista de colaboradores confirmados de forma resumida em uma linha
+
+____________
+
+Na página de confirmados, incluia um botão que gere uma lista em CSV ou PDF.
+
+___________
+
+Em gestão do ônibus, devem aparecer 
+Mode como no dashboard:
+LUGARES CONFIRMADOS 
+EMBARCADOS
+FALTAM EMBARCAR
+Botão para download csv ou pdf.
+
+Em baixo mostre
+
+NOME 
+RG
+UM SELO DE ACOMPANHANTE ou COLABORADOR
+SELO OU ICONE DE CRIANÇA
+IDADE DA CRIANÇA
+INFO DA CRIANÇA SE SERÁ COLO OU ASSENTO.
+Todos poderão ser marcados como embarcado.
+
+
+
