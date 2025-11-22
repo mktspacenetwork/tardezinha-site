@@ -43,27 +43,23 @@ const StepSummary: React.FC<StepSummaryProps> = ({ onSubmit }) => {
 
         if (updateError) throw updateError;
 
-        // Delete old companions
-        await supabase
-          .from('companions')
-          .delete()
-          .eq('confirmation_id', editingConfirmationId);
+        // Upsert companions using atomic RPC transaction (avoids schema cache issues)
+        const companionsData = wizardData.companions.map(c => ({
+          name: c.name,
+          age: c.age,
+          document: c.document,
+          type: c.type,
+        }));
 
-        // Insert new companions
-        if (wizardData.companions.length > 0) {
-          const companionsData = wizardData.companions.map(c => ({
-            confirmation_id: editingConfirmationId,
-            name: c.name,
-            age: c.age,
-            document: c.document,
-            type: c.type,
-          }));
+        const { error: upsertError } = await supabase
+          .rpc('upsert_companions', {
+            conf_id: editingConfirmationId,
+            companions_json: companionsData,
+          });
 
-          const { error: companionsError } = await supabase
-            .from('companions')
-            .insert(companionsData);
-
-          if (companionsError) throw companionsError;
+        if (upsertError) {
+          console.error('Error upserting companions:', upsertError);
+          throw upsertError;
         }
       } else {
         // Create new confirmation
@@ -82,21 +78,25 @@ const StepSummary: React.FC<StepSummaryProps> = ({ onSubmit }) => {
           throw insertError;
         }
 
-        // Insert companions
+        // Insert companions using atomic RPC transaction (avoids schema cache issues)
         if (wizardData.companions.length > 0 && confirmation) {
           const companionsData = wizardData.companions.map(c => ({
-            confirmation_id: confirmation.id,
             name: c.name,
             age: c.age,
             document: c.document,
             type: c.type,
           }));
 
-          const { error: companionsError } = await supabase
-            .from('companions')
-            .insert(companionsData);
+          const { error: insertError } = await supabase
+            .rpc('upsert_companions', {
+              conf_id: confirmation.id,
+              companions_json: companionsData,
+            });
 
-          if (companionsError) throw companionsError;
+          if (insertError) {
+            console.error('Error inserting companions:', insertError);
+            throw insertError;
+          }
         }
       }
 
