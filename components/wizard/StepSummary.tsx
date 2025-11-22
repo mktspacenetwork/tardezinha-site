@@ -43,25 +43,30 @@ const StepSummary: React.FC<StepSummaryProps> = ({ onSubmit }) => {
 
         if (updateError) throw updateError;
 
-        // Upsert companions using atomic RPC transaction (avoids schema cache issues)
-        // IMPORTANT: PostgreSQL function parameters MUST be in alphabetical order
-        // for PostgREST to find them when using named parameters in .rpc() calls
-        const companionsData = wizardData.companions.map(c => ({
-          name: c.name,
-          age: c.age,
-          document: c.document,
-          type: c.type,
-        }));
+        // Delete old companions first
+        await supabase
+          .from('companions')
+          .delete()
+          .eq('confirmation_id', editingConfirmationId);
 
-        const { error: upsertError } = await supabase
-          .rpc('upsert_companions', {
-            conf_id: editingConfirmationId,
-            companions_json: companionsData,
-          });
+        // Insert new companions if any
+        if (wizardData.companions.length > 0) {
+          const companionsData = wizardData.companions.map(c => ({
+            confirmation_id: editingConfirmationId,
+            name: c.name,
+            age: c.age,
+            document: c.document,
+            type: c.type,
+          }));
 
-        if (upsertError) {
-          console.error('Error upserting companions:', upsertError);
-          throw upsertError;
+          const { error: companionsError } = await supabase
+            .from('companions')
+            .insert(companionsData);
+
+          if (companionsError) {
+            console.error('Error inserting companions:', companionsError);
+            throw companionsError;
+          }
         }
       } else {
         // Create new confirmation
@@ -80,26 +85,23 @@ const StepSummary: React.FC<StepSummaryProps> = ({ onSubmit }) => {
           throw insertError;
         }
 
-        // Insert companions using atomic RPC transaction (avoids schema cache issues)
-        // IMPORTANT: PostgreSQL function parameters MUST be in alphabetical order
-        // for PostgREST to find them when using named parameters in .rpc() calls
+        // Insert companions if any
         if (wizardData.companions.length > 0 && confirmation) {
           const companionsData = wizardData.companions.map(c => ({
+            confirmation_id: confirmation.id,
             name: c.name,
             age: c.age,
             document: c.document,
             type: c.type,
           }));
 
-          const { error: insertError } = await supabase
-            .rpc('upsert_companions', {
-              conf_id: confirmation.id,
-              companions_json: companionsData,
-            });
+          const { error: companionsError } = await supabase
+            .from('companions')
+            .insert(companionsData);
 
-          if (insertError) {
-            console.error('Error inserting companions:', insertError);
-            throw insertError;
+          if (companionsError) {
+            console.error('Error inserting companions:', companionsError);
+            throw companionsError;
           }
         }
       }
