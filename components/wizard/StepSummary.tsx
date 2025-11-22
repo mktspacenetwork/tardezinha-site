@@ -43,30 +43,24 @@ const StepSummary: React.FC<StepSummaryProps> = ({ onSubmit }) => {
 
         if (updateError) throw updateError;
 
-        // Delete old companions first
-        await supabase
-          .from('companions')
-          .delete()
-          .eq('confirmation_id', editingConfirmationId);
+        // Upsert companions using atomic RPC transaction
+        // Function created in Supabase Dashboard with parameters in alphabetical order
+        const companionsData = wizardData.companions.map(c => ({
+          name: c.name,
+          age: c.age,
+          document: c.document,
+          type: c.type,
+        }));
 
-        // Insert new companions if any
-        if (wizardData.companions.length > 0) {
-          const companionsData = wizardData.companions.map(c => ({
-            confirmation_id: editingConfirmationId,
-            name: c.name,
-            age: c.age,
-            document: c.document,
-            type: c.type,
-          }));
+        const { error: upsertError } = await supabase
+          .rpc('upsert_companions', {
+            companions_json: companionsData,
+            conf_id: editingConfirmationId,
+          });
 
-          const { error: companionsError } = await supabase
-            .from('companions')
-            .insert(companionsData);
-
-          if (companionsError) {
-            console.error('Error inserting companions:', companionsError);
-            throw companionsError;
-          }
+        if (upsertError) {
+          console.error('Error upserting companions:', upsertError);
+          throw upsertError;
         }
       } else {
         // Create new confirmation
@@ -85,10 +79,10 @@ const StepSummary: React.FC<StepSummaryProps> = ({ onSubmit }) => {
           throw insertError;
         }
 
-        // Insert companions if any
+        // Insert companions using atomic RPC transaction
+        // Function created in Supabase Dashboard with parameters in alphabetical order
         if (wizardData.companions.length > 0 && confirmation) {
           const companionsData = wizardData.companions.map(c => ({
-            confirmation_id: confirmation.id,
             name: c.name,
             age: c.age,
             document: c.document,
@@ -96,8 +90,10 @@ const StepSummary: React.FC<StepSummaryProps> = ({ onSubmit }) => {
           }));
 
           const { error: companionsError } = await supabase
-            .from('companions')
-            .insert(companionsData);
+            .rpc('upsert_companions', {
+              companions_json: companionsData,
+              conf_id: confirmation.id,
+            });
 
           if (companionsError) {
             console.error('Error inserting companions:', companionsError);
