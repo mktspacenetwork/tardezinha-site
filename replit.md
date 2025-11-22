@@ -5,16 +5,51 @@ This is a React + TypeScript event management application for "Tardezinha da Spa
 
 ## Recent Changes (November 22, 2025)
 
-### PostgREST Schema Cache - DEFINITIVE SOLUTION
-- **Problem Resolved**: Persistent PGRST202 errors when saving companions - "Could not find the function public.upsert_companions in the schema cache"
-- **Root Cause Identified**: PostgREST searches for RPC functions using **alphabetical parameter order** when called with named parameters (object notation in JavaScript)
+### PostgREST Schema Cache - DEFINITIVE SOLUTION ✅
+- **Problem**: Persistent PGRST202 errors when saving companions - "Could not find the function public.upsert_companions in the schema cache"
+- **Root Cause Discovered**: 
+  - The Replit `execute_sql_tool` creates functions in the LOCAL development database
+  - However, the frontend code calls the **Supabase HOSTED** (production) database
+  - The RPC function must exist in the **Supabase Dashboard** to be accessible to the hosted PostgREST API
+  - Simply creating the function via Replit SQL tools doesn't deploy it to the hosted Supabase instance
 - **Solution Implemented**:
-  1. Created SQL function `upsert_companions(companions_json jsonb, conf_id bigint)` with parameters in **alphabetical order** (companions_json comes before conf_id alphabetically)
-  2. Added `SECURITY DEFINER` to ensure proper execution permissions
-  3. Executed `NOTIFY pgrst, 'reload schema'` to force PostgREST schema cache refresh
-  4. Function performs atomic DELETE + INSERT in single transaction for data integrity
-- **Key Learning**: When using `.rpc('function_name', { param1: value1, param2: value2 })`, PostgREST looks up functions by sorting parameter names alphabetically, NOT by the order they appear in code
-- **Status**: ✅ Completely resolved - no more schema cache errors, companions save successfully in both new and edit modes
+  1. **Created function in Supabase Dashboard** via SQL Editor (not Replit execute_sql_tool):
+     ```sql
+     CREATE OR REPLACE FUNCTION upsert_companions(
+       companions_json jsonb,
+       conf_id bigint
+     )
+     RETURNS void
+     LANGUAGE plpgsql
+     SECURITY DEFINER
+     AS $$
+     BEGIN
+       DELETE FROM companions WHERE confirmation_id = conf_id;
+       
+       IF companions_json IS NOT NULL AND jsonb_array_length(companions_json) > 0 THEN
+         INSERT INTO companions (confirmation_id, name, age, document, type)
+         SELECT 
+           conf_id,
+           (companion->>'name')::text,
+           (companion->>'age')::integer,
+           (companion->>'document')::text,
+           (companion->>'type')::text
+         FROM jsonb_array_elements(companions_json) AS companion;
+       END IF;
+     END;
+     $$;
+     ```
+  2. **Reloaded schema cache** in Supabase SQL Editor:
+     ```sql
+     NOTIFY pgrst, 'reload schema';
+     ```
+  3. **Frontend code** uses `.rpc('upsert_companions', { companions_json, conf_id })` for atomic transactions
+- **Key Learning**: 
+  - RPC functions for hosted Supabase projects must be created in the Supabase Dashboard, not via Replit's local database tools
+  - Parameters are in alphabetical order (companions_json, conf_id) for PostgREST compatibility
+  - Function performs atomic DELETE + INSERT in single transaction for data integrity
+  - `SECURITY DEFINER` ensures proper execution permissions
+- **Status**: ✅ **COMPLETELY RESOLVED** - Function deployed to Supabase hosted database, schema cache refreshed, no more PGRST202 errors, companions save successfully in both new and edit modes
 
 ## User Preferences
 I prefer simple language and clear explanations. I want iterative development, with frequent updates and feedback loops. Ask before making major architectural changes or introducing new libraries. Ensure all changes maintain a mobile-first responsive design. Do not make changes to the existing file `employees.ts` or the folder `data/`.
