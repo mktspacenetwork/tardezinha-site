@@ -91,28 +91,36 @@ const StepTransport: React.FC<StepTransportProps> = ({ onNext }) => {
         <p className="text-gray-600">Você precisa de ônibus para o evento?</p>
       </div>
 
-      {/* Bus availability */}
-      <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-sm text-blue-700 font-semibold">Vagas disponíveis</div>
-            <div className="text-2xl font-bold text-blue-900">{remainingSeats} / {TOTAL_SEATS}</div>
-          </div>
-          <div className="text-blue-500">
-            <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
-              <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1v-5a1 1 0 00-.293-.707l-2-2A1 1 0 0015 7h-1z" />
-            </svg>
-          </div>
+      {/* Transport info boxes - Elegant cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Transfer +6 years */}
+        <div className="bg-white border-2 border-orange-200 rounded-xl p-5 text-center shadow-sm hover:shadow-md transition-shadow">
+          <svg className="w-10 h-10 mx-auto mb-3 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+          </svg>
+          <div className="text-sm font-semibold text-gray-600 mb-2">Transfer (+6 anos)</div>
+          <div className="text-xl font-bold text-orange-600 mb-1">12x R$ 6,53</div>
+          <div className="text-sm text-gray-600">ou R$ 64,19</div>
         </div>
-      </div>
 
-      {/* Price info */}
-      <div className="bg-gradient-to-r from-orange-50 to-pink-50 border-2 border-orange-200 rounded-xl p-4">
-        <div className="text-sm text-gray-700 space-y-1">
-          <p>💰 <strong>Transporte:</strong> R$ 64,19 por pessoa (à vista) ou 12x R$ 6,53</p>
-          <p>⚠️ <strong>Atenção:</strong> Colaborador também paga transporte!</p>
-          <p>👶 <strong>Crianças até 5 anos:</strong> Grátis no colo (pode comprar assento se preferir)</p>
+        {/* Transfer ≤5 years */}
+        <div className="bg-white border-2 border-green-200 rounded-xl p-5 text-center shadow-sm hover:shadow-md transition-shadow">
+          <svg className="w-10 h-10 mx-auto mb-3 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <div className="text-sm font-semibold text-gray-600 mb-2">Transfer (até 5 anos)</div>
+          <div className="text-3xl font-bold text-green-600 mb-1">R$ 0,00</div>
+          <div className="text-xs text-gray-500 font-medium">(Deve ir no colo)</div>
+        </div>
+
+        {/* Available seats */}
+        <div className="bg-white border-2 border-blue-200 rounded-xl p-5 text-center shadow-sm hover:shadow-md transition-shadow">
+          <svg className="w-10 h-10 mx-auto mb-3 text-gray-700" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M10 3.5a1.5 1.5 0 013 0V4a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-.5a1.5 1.5 0 000 3h.5a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-.5a1.5 1.5 0 00-3 0v.5a1 1 0 01-1 1H6a1 1 0 01-1-1v-3a1 1 0 00-1-1h-.5a1.5 1.5 0 010-3H4a1 1 0 001-1V6a1 1 0 011-1h3a1 1 0 001-1v-.5z" />
+          </svg>
+          <div className="text-sm font-semibold text-gray-600 mb-2">Vagas Disponíveis</div>
+          <div className="text-3xl font-bold text-blue-600 mb-1">{remainingSeats}</div>
+          <div className="text-xs text-gray-500">de {TOTAL_SEATS} assentos</div>
         </div>
       </div>
 

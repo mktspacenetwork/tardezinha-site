@@ -93,11 +93,38 @@ const StepCompanions: React.FC<StepCompanionsProps> = ({ onNext }) => {
         <p className="text-gray-600">Você vai levar alguém com você?</p>
       </div>
 
-      {/* Price info */}
-      <div className="bg-gradient-to-r from-orange-50 to-pink-50 border-2 border-orange-200 rounded-xl p-4">
-        <div className="text-sm text-gray-700 space-y-1">
-          <p>💰 <strong>Diárias:</strong> R$ 103,78 (13+ anos) | R$ 51,89 (até 12 anos - meia)</p>
-          <p>✅ <strong>Você (colaborador):</strong> GRÁTIS!</p>
+      {/* Price boxes - Elegant cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Colaborador */}
+        <div className="bg-white border-2 border-gray-200 rounded-xl p-5 text-center shadow-sm hover:shadow-md transition-shadow">
+          <svg className="w-10 h-10 mx-auto mb-3 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+          <div className="text-sm font-semibold text-gray-600 mb-2">Diária Colaborador</div>
+          <div className="text-3xl font-bold text-green-600 mb-1">R$ 0,00</div>
+          <div className="text-xs text-gray-500 font-medium">(Grátis)</div>
+        </div>
+
+        {/* Adult */}
+        <div className="bg-white border-2 border-orange-200 rounded-xl p-5 text-center shadow-sm hover:shadow-md transition-shadow">
+          <svg className="w-10 h-10 mx-auto mb-3 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+          <div className="text-sm font-semibold text-gray-600 mb-2">Acompanhante Adulto</div>
+          <div className="text-xs text-gray-500 mb-1">(+13 anos)</div>
+          <div className="text-xl font-bold text-orange-600 mb-1">12x R$ 10,56</div>
+          <div className="text-sm text-gray-600">Ou R$ 103,78 à vista</div>
+        </div>
+
+        {/* Child */}
+        <div className="bg-white border-2 border-pink-200 rounded-xl p-5 text-center shadow-sm hover:shadow-md transition-shadow">
+          <svg className="w-10 h-10 mx-auto mb-3 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <div className="text-sm font-semibold text-gray-600 mb-2">Acompanhante Meia</div>
+          <div className="text-xs text-gray-500 mb-1">(até 12 anos)</div>
+          <div className="text-xl font-bold text-pink-600 mb-1">10x R$ 6,26</div>
+          <div className="text-sm text-gray-600">Ou R$ 51,89 à vista</div>
         </div>
       </div>
 

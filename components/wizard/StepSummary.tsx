@@ -237,6 +237,23 @@ const StepSummary: React.FC<StepSummaryProps> = ({ onSubmit }) => {
         )}
       </div>
 
+      {/* Payment info */}
+      {costs.total > 0 && (
+        <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-5">
+          <div className="flex items-start gap-3">
+            <svg className="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+            </svg>
+            <div>
+              <h5 className="font-bold text-blue-800 mb-1">Formas de Pagamento</h5>
+              <p className="text-sm text-blue-700">
+                Você poderá realizar seu pagamento via <strong>Pix</strong> ou parcelado em <strong>todos os cartões de crédito</strong>.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Error message */}
       {error && (
         <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 text-red-700">
