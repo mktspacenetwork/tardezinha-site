@@ -44,6 +44,8 @@ const StepSummary: React.FC<StepSummaryProps> = ({ onSubmit }) => {
         if (updateError) throw updateError;
 
         // Upsert companions using atomic RPC transaction (avoids schema cache issues)
+        // IMPORTANT: PostgreSQL function parameters MUST be in alphabetical order
+        // for PostgREST to find them when using named parameters in .rpc() calls
         const companionsData = wizardData.companions.map(c => ({
           name: c.name,
           age: c.age,
@@ -79,6 +81,8 @@ const StepSummary: React.FC<StepSummaryProps> = ({ onSubmit }) => {
         }
 
         // Insert companions using atomic RPC transaction (avoids schema cache issues)
+        // IMPORTANT: PostgreSQL function parameters MUST be in alphabetical order
+        // for PostgREST to find them when using named parameters in .rpc() calls
         if (wizardData.companions.length > 0 && confirmation) {
           const companionsData = wizardData.companions.map(c => ({
             name: c.name,

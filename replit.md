@@ -3,6 +3,19 @@
 ## Overview
 This is a React + TypeScript event management application for "Tardezinha da Space" - an annual company celebration event. The application, built with Vite and utilizing Supabase for backend services, manages event registrations, companion details, transport options, and integrates with a purchase system. Its purpose is to streamline the event attendance confirmation process for employees and their guests.
 
+## Recent Changes (November 22, 2025)
+
+### PostgREST Schema Cache - DEFINITIVE SOLUTION
+- **Problem Resolved**: Persistent PGRST202 errors when saving companions - "Could not find the function public.upsert_companions in the schema cache"
+- **Root Cause Identified**: PostgREST searches for RPC functions using **alphabetical parameter order** when called with named parameters (object notation in JavaScript)
+- **Solution Implemented**:
+  1. Created SQL function `upsert_companions(companions_json jsonb, conf_id bigint)` with parameters in **alphabetical order** (companions_json comes before conf_id alphabetically)
+  2. Added `SECURITY DEFINER` to ensure proper execution permissions
+  3. Executed `NOTIFY pgrst, 'reload schema'` to force PostgREST schema cache refresh
+  4. Function performs atomic DELETE + INSERT in single transaction for data integrity
+- **Key Learning**: When using `.rpc('function_name', { param1: value1, param2: value2 })`, PostgREST looks up functions by sorting parameter names alphabetically, NOT by the order they appear in code
+- **Status**: ✅ Completely resolved - no more schema cache errors, companions save successfully in both new and edit modes
+
 ## User Preferences
 I prefer simple language and clear explanations. I want iterative development, with frequent updates and feedback loops. Ask before making major architectural changes or introducing new libraries. Ensure all changes maintain a mobile-first responsive design. Do not make changes to the existing file `employees.ts` or the folder `data/`.
 
@@ -26,7 +39,7 @@ The application uses a 6-step confirmation wizard as its primary interface for u
     *   Children (0-12): R$ 51,89 daily pass (half price) + R$ 64,19 transport.
     *   Children (≤5): Can sit on lap for FREE transport.
 *   **Admin Dashboard:** Password-protected (`space2025`) with real-time statistics, attendance management (CRUD), bus boarding lists with check-in/check-out, and employee database management.
-*   **Database Interaction:** Companion operations use a PostgreSQL RPC function `upsert_companions` for atomic transactions, bypassing PostgREST schema caching for reliability and performance. This function deletes existing companions and inserts new ones within a single transaction.
+*   **Database Interaction:** Companion operations use a PostgreSQL RPC function `upsert_companions(companions_json, conf_id)` for atomic transactions, bypassing PostgREST schema caching for reliability and performance. **CRITICAL**: Parameters must be in ALPHABETICAL ORDER for PostgREST compatibility - this is how PostgREST searches for functions when using named parameters. Function is created with `SECURITY DEFINER` to ensure proper execution permissions.
 
 **Tech Stack:**
 *   **Frontend:** React 19.2.0, Vite 6.2.0, TypeScript 5.8.2.
