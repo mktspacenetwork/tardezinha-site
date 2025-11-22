@@ -55,7 +55,7 @@ const StepEmployeeLogin: React.FC<StepEmployeeLoginProps> = ({ onNext, onDuplica
       
       const { data, error } = await supabase
         .from('confirmations')
-        .select('*, companions(*)')
+        .select('*')
         .eq('employee_id', employeeId)
         .maybeSingle();
 
@@ -66,7 +66,17 @@ const StepEmployeeLogin: React.FC<StepEmployeeLoginProps> = ({ onNext, onDuplica
 
       if (data) {
         console.log('✅ DUPLICATE FOUND! Existing confirmation:', data);
-        return data;
+        
+        // Load companions separately if confirmation exists
+        const { data: companions } = await supabase
+          .from('companions')
+          .select('*')
+          .eq('confirmation_id', data.id);
+        
+        return {
+          ...data,
+          companions: companions || [],
+        };
       }
       
       console.log('✅ No duplicate - employee can create new confirmation');
