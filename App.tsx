@@ -6,7 +6,6 @@ import EventDetails from './components/EventDetails';
 import Gallery from './components/Gallery';
 import Checkin from './components/Checkin';
 import PurchaseOptions from './components/PurchaseOptions';
-import PromoSection from './components/PromoSection';
 import FAQ from './components/FAQ';
 import Footer from './components/Footer';
 import Admin from './components/Admin';
@@ -81,7 +80,6 @@ const App: React.FC = () => {
         <Gallery />
         <Checkin onConfirm={() => setShowPurchaseIntro(true)} onOpenRules={handleOpenRules} />
         <PurchaseOptions showIntro={showPurchaseIntro} />
-        <PromoSection />
         <FAQ />
       </main>
       <Footer onAdminClick={handleAdminEnter} onOpenRules={handleOpenRules} />
