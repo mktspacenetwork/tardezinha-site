@@ -140,14 +140,9 @@ const PurchaseOptions: React.FC<PurchaseOptionsProps> = ({ showIntro }) => {
               </ul>
               <button 
                 onClick={() => handlePurchaseClick(showIntro)}
-                aria-disabled={!showIntro}
-                className={`mt-auto w-full font-bold py-3 md:py-4 px-6 rounded-xl transition-all duration-300 text-base md:text-lg ${
-                  showIntro
-                    ? 'bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105'
-                    : 'bg-gray-300 text-gray-500 cursor-pointer opacity-60 hover:opacity-80'
-                }`}
+                className="mt-auto w-full font-bold py-3 md:py-4 px-6 rounded-xl transition-all duration-300 text-base md:text-lg bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105"
               >
-                {showIntro ? 'Comprar Diária' : 'Confirme sua presença para liberar'}
+                Comprar Diária
               </button>
             </div>
 
@@ -178,16 +173,13 @@ const PurchaseOptions: React.FC<PurchaseOptionsProps> = ({ showIntro }) => {
               <button 
                 onClick={() => remainingSeats > 0 && handlePurchaseClick(showIntro)}
                 disabled={remainingSeats === 0}
-                aria-disabled={!showIntro || remainingSeats === 0}
                 className={`mt-auto w-full font-bold py-3 md:py-4 px-6 rounded-xl transition-all duration-300 text-base md:text-lg ${
                   remainingSeats === 0
                     ? 'bg-gray-400 text-gray-600 cursor-not-allowed opacity-70'
-                    : showIntro
-                    ? 'bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105'
-                    : 'bg-gray-300 text-gray-500 cursor-pointer opacity-60 hover:opacity-80'
+                    : 'bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105'
                 }`}
               >
-                {remainingSeats === 0 ? 'ESGOTADAS' : showIntro ? 'Reservar Transfer' : 'Confirme sua presença para liberar'}
+                {remainingSeats === 0 ? 'ESGOTADAS' : 'Reservar Transfer'}
               </button>
             </div>
 
