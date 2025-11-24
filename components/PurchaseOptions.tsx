@@ -119,33 +119,6 @@ const PurchaseOptions: React.FC<PurchaseOptionsProps> = ({ showIntro }) => {
               </ul>
             </div>
 
-            {/* Guest Ticket Card */}
-            <div
-              className={`bg-gradient-to-br from-white to-gray-50 border-2 ${showIntro ? 'border-pink-200' : 'border-gray-200'} rounded-2xl p-6 md:p-8 text-left flex flex-col shadow-lg hover:shadow-2xl transition-all duration-300 ease-out ${
-                isVisible
-                  ? 'opacity-100 translate-y-0'
-                  : 'opacity-0 translate-y-10'
-              }`}
-            >
-              <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-4">Diária Acompanhante</h3>
-              <div className="mb-6">
-                  <p className="text-3xl md:text-4xl font-black bg-gradient-to-r from-orange-500 to-pink-600 bg-clip-text text-transparent">12x R$10,56</p>
-                  <p className="text-xs md:text-sm text-gray-500">(taxas inclusas)</p>
-                  <p className="text-sm md:text-base font-semibold text-gray-600 mt-2">Ou R$ 103,78 à vista.</p>
-              </div>
-              <ul className="text-gray-600 space-y-2 md:space-y-3 mb-6 flex-grow text-sm md:text-base">
-                <li className="flex items-center"><CheckIcon /> Diária do sítio</li>
-                <li className="flex items-center"><CheckIcon /> Open Chopp + Bebidas</li>
-                <li className="flex items-center"><CheckIcon /> Almoço a vontade</li>
-              </ul>
-              <button 
-                onClick={() => handlePurchaseClick(showIntro)}
-                className="mt-auto w-full font-bold py-3 md:py-4 px-6 rounded-xl transition-all duration-300 text-base md:text-lg bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105"
-              >
-                Comprar Diária
-              </button>
-            </div>
-
             {/* Bus Transfer Card */}
             <div
               className={`bg-gradient-to-br from-white to-gray-50 border-2 ${showIntro ? 'border-pink-200' : 'border-gray-200'} rounded-2xl p-6 md:p-8 text-left flex flex-col shadow-lg hover:shadow-2xl transition-all duration-300 ease-out ${
